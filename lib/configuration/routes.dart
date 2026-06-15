@@ -4,7 +4,7 @@
 
 import 'package:flutter/material.dart';
 import '../ecrans/authentification/ecran_connexion.dart';
-// import '../ecrans/agent/ecran_accueil_agent.dart';
+import '../ecrans/agent/ecran_accueil_agent.dart';
 // import '../ecrans/agent/ecran_nouveau_signalement.dart';
 // import '../ecrans/agent/ecran_camera_document.dart';
 // import '../ecrans/agent/ecran_mes_signalements.dart';
@@ -22,6 +22,7 @@ class Routes {
 
   static Map<String, WidgetBuilder> get toutes => {
     onboarding: (_) => const EcranOnboarding(),
-    connexion: (_) => const EcranConnexion(),
+    connexion: (_) => const PageConnexion(),
+    accueilAgent:(_) => const AcceuilAgent(),
   };
 }

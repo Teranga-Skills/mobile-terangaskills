@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:teranga_skills/configuration/theme.dart';
-import 'package:teranga_skills/ecrans/ecran_onboarding.dart';
 import 'configuration/routes.dart';
 
 void main() {
@@ -20,7 +19,7 @@ class TerangaSkillsApp extends StatelessWidget {
       theme: ThemeApplication.themeClair,
       darkTheme: ThemeApplication.themeSombre,
       
-       routes: Routes.toutes,
+      routes: Routes.toutes,
     );
   }
 }
