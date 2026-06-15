@@ -1,0 +1,27 @@
+// -----------------------------------------------------------------
+// Définition centralisée des routes nommées
+// -----------------------------------------------------------------
+
+import 'package:flutter/material.dart';
+import '../ecrans/authentification/ecran_connexion.dart';
+// import '../ecrans/agent/ecran_accueil_agent.dart';
+// import '../ecrans/agent/ecran_nouveau_signalement.dart';
+// import '../ecrans/agent/ecran_camera_document.dart';
+// import '../ecrans/agent/ecran_mes_signalements.dart';
+import '../ecrans/ecran_onboarding.dart';
+
+class Routes {
+  Routes._();
+
+  static const String onboarding = '/';
+  static const String connexion = '/connexion';
+  static const String accueilAgent = '/agent/accueil';
+  static const String nouveauSignalement = '/agent/signalement/nouveau';
+  static const String cameraDocument = '/agent/signalement/camera';
+  static const String mesSignalements = '/agent/signalements';
+
+  static Map<String, WidgetBuilder> get toutes => {
+    onboarding: (_) => const EcranOnboarding(),
+    connexion: (_) => const EcranConnexion(),
+  };
+}
