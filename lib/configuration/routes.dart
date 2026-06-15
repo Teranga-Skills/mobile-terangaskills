@@ -3,6 +3,7 @@
 // -----------------------------------------------------------------
 
 import 'package:flutter/material.dart';
+import '../ecrans/splash/ecran_splash.dart';
 import '../ecrans/authentification/ecran_connexion.dart';
 import '../ecrans/agent/ecran_accueil_agent.dart';
 // import '../ecrans/agent/ecran_nouveau_signalement.dart';
@@ -13,7 +14,8 @@ import '../ecrans/ecran_onboarding.dart';
 class Routes {
   Routes._();
 
-  static const String onboarding = '/';
+  static const String splash        = '/';       
+  static const String onboarding    = '/onboarding';
   static const String connexion = '/connexion';
   static const String accueilAgent = '/agent/accueil';
   static const String nouveauSignalement = '/agent/signalement/nouveau';
@@ -21,6 +23,7 @@ class Routes {
   static const String mesSignalements = '/agent/signalements';
 
   static Map<String, WidgetBuilder> get toutes => {
+    splash:       (_) => const EcranSplash(),   
     onboarding: (_) => const EcranOnboarding(),
     connexion: (_) => const PageConnexion(),
     accueilAgent:(_) => const AcceuilAgent(),

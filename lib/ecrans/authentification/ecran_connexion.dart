@@ -68,7 +68,7 @@ class _PageConnexionState extends State<PageConnexion> {
                   Column(
                     children: [
                       Text(
-                        'Welcome back',
+                        'DetectSen',
                         textAlign: TextAlign.center,
                         style: ThemeApplication.titrePrincipal.copyWith(
                           fontSize: 36,
@@ -78,7 +78,7 @@ class _PageConnexionState extends State<PageConnexion> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'sign in to access your account',
+                        "Vigilance Citoyenne Assistée",
                         textAlign: TextAlign.center,
                         style: ThemeApplication.corpsMedium.copyWith(
                           color: const Color(0xFF252525),
