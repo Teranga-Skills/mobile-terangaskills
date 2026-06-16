@@ -8,7 +8,7 @@ class Constantes {
 
   // ─── API ────────────────────────────────────────────────────────
 
-  static const String urlBaseApi         = 'https://api.terangaskills.sn/api/v1';
+  static const String urlBaseApi         = ' /api/v1';
   static const String endpointConnexion  = '/auth/login/';
   static const String endpointSignalements = '/signalements/';
   static const String endpointOcr        = '/ia/ocr/';

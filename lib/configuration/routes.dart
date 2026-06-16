@@ -26,6 +26,6 @@ class Routes {
     splash:       (_) => const EcranSplash(),   
     onboarding: (_) => const EcranOnboarding(),
     connexion: (_) => const PageConnexion(),
-    accueilAgent:(_) => const AcceuilAgent(),
+    accueilAgent:(_) => const EcranAccueilAgent(),
   };
 }
