@@ -62,19 +62,19 @@ class _EcranSplashState extends State<EcranSplash>
               mainAxisSize: MainAxisSize.min,
               children: [
                 // ── Logo / icône ──────────────────────────────
-                Container(
-                  width: 80,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Icon(
-                    Icons.search, // TODO : remplace par ton vrai logo
-                    color: Colors.white,
-                    size: 40,
-                  ),
-                ),
+                // Container(
+                //   width: 80,
+                //   height: 80,
+                //   // decoration: BoxDecoration(
+                //   //   color: Colors.white.withValues(alpha: 0.2),
+                //   //   borderRadius: BorderRadius.circular(20),
+                //   // ),
+                //   // child: const Icon(
+                //   //   Icons.search, // TODO : remplace par ton vrai logo
+                //   //   color: Colors.white,
+                //   //   size: 40,
+                //   // ),
+                // ),
 
                 const SizedBox(height: 16),
 
@@ -93,16 +93,16 @@ class _EcranSplashState extends State<EcranSplash>
                 const SizedBox(height: 8),
 
                 // ── Tagline optionnelle ───────────────────────
-                Text(
-                  'Signaler. Détecter. Agir.',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.75),
-                    fontSize: 13,
-                    fontFamily: 'Montserrat',
-                    fontWeight: FontWeight.w300,
-                    letterSpacing: 0.5,
-                  ),
-                ),
+                // Text(
+                //   'Signaler. Détecter. Agir.',
+                //   style: TextStyle(
+                //     color: Colors.white.withValues(alpha: 0.75),
+                //     fontSize: 13,
+                //     fontFamily: 'Montserrat',
+                //     fontWeight: FontWeight.w300,
+                //     letterSpacing: 0.5,
+                //   ),
+                // ),
               ],
             ),
           ),

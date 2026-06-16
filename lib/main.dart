@@ -18,7 +18,7 @@ class TerangaSkillsApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeApplication.themeClair,
       darkTheme: ThemeApplication.themeSombre,
-      
+      initialRoute: Routes.splash, 
       routes: Routes.toutes,
     );
   }
