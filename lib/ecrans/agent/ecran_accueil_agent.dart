@@ -1,18 +1,14 @@
 // -----------------------------------------------------------------
 // Écran Accueil Agent — TerangaSkills
-//
-// Comportement scroll :
-//   • Header bleu (avatar + nom + zone) → se réduit au scroll
-//   • SliverAppBar pinned : garde une top bar compacte visible
-//   • Carte Scan, Actions rapides, Activités restent scrollables
-//   • BottomNav fixe avec bouton scan central surélevé
 // -----------------------------------------------------------------
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:teranga_skills/widgets/widget_entete_agent.dart';
 import '../../configuration/theme.dart';
-
+import '../../widgets/widget_barre_navigation.dart';
+import '../../widgets/widget_carte_activite.dart';
+import '../../widgets/widget_entete_agent.dart';
+import '../../configuration/routes.dart';
 
 class EcranAccueilAgent extends StatefulWidget {
   const EcranAccueilAgent({super.key});
@@ -24,13 +20,11 @@ class EcranAccueilAgent extends StatefulWidget {
 class _EcranAccueilAgentState extends State<EcranAccueilAgent> {
   int _indexNav = 0;
 
-  // ─── Hauteur du header expanded ─────────────────────────────────
-  static const double _hauteurHeaderExpanded = 140.0;
+  static const double _hauteurHeaderExpanded  = 140.0;
   static const double _hauteurHeaderCollapsed = 70.0;
 
   @override
   Widget build(BuildContext context) {
-    // Barre de statut blanche sur fond bleu
     SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: Brightness.light,
@@ -38,150 +32,62 @@ class _EcranAccueilAgentState extends State<EcranAccueilAgent> {
 
     return Scaffold(
       backgroundColor: ThemeApplication.couleurFond,
-      extendBody: true, // le contenu passe sous la bottom nav (effet glassmorphism)
+      extendBody: true,
 
-      // ── BODY : CustomScrollView avec Slivers ──────────────────────
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
 
-          // ── SliverAppBar : header qui se réduit ───────────────────
+          // ── SliverAppBar : header qui se réduit ───────────────
           SliverAppBar(
-          expandedHeight: _hauteurHeaderExpanded,
-          collapsedHeight: _hauteurHeaderCollapsed,
-          pinned: true,
-          stretch: false,
-          backgroundColor: ThemeApplication.couleurPrimaire,
-          elevation: 0,
-          automaticallyImplyLeading: false,
-
-          flexibleSpace: FlexibleSpaceBar(
-            collapseMode: CollapseMode.parallax,
-            background: EnteteAgent(),
+            expandedHeight: _hauteurHeaderExpanded,
+            collapsedHeight: _hauteurHeaderCollapsed,
+            pinned: true,
+            stretch: false,
+            backgroundColor: ThemeApplication.couleurPrimaire,
+            elevation: 0,
+            automaticallyImplyLeading: false,
+            flexibleSpace: FlexibleSpaceBar(
+              collapseMode: CollapseMode.parallax,
+              background: EnteteAgent(),
+            ),
           ),
-        ),
 
-          // ── Contenu scrollable ────────────────────────────────────
+          // ── Contenu scrollable ─────────────────────────────────
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(20, 24, 20, 120),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
 
-                // Carte Scanner hero
-                Transform.translate(
-  offset: const Offset(0, 0),
-  child: const _CarteScan(),
-),
+                const _CarteScan(),
                 const SizedBox(height: 20),
 
-                // Actions rapides
                 const _ActionsRapides(),
                 const SizedBox(height: 28),
 
-                // Activités récentes
-                const _SectionActivites(),
+                // ── Section activités avec WidgetCarteActivite ───
+                _SectionActivites(),
               ]),
             ),
           ),
         ],
       ),
 
-      // ── BOTTOM NAV FIXE ──────────────────────────────────────────
-      bottomNavigationBar: _BarreNavigation(
+      // ── WidgetBarreNavigation ─────────────────────────────────
+      bottomNavigationBar: WidgetBarreNavigation(
         indexCourant: _indexNav,
         onTap: (i) => setState(() => _indexNav = i),
-      ),
-    );
-  }
-}
-
-
-
-// ─────────────────────────────────────────────────────────────────
-// ENTÊTE COLLAPSED (visible après scroll)
-// ─────────────────────────────────────────────────────────────────
-
-class _EnteteCollapsed extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final topPadding = MediaQuery.of(context).padding.top;
-
-    return Padding(
-      padding: EdgeInsets.only(
-        top: topPadding,
-        left: 16,
-        right: 16,
-      ),
-      child: SizedBox(
-        height: 70,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            // Mini avatar + nom compact
-            Row(
-              children: [
-                Container(
-                  width: 34,
-                  height: 34,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.4),
-                      width: 1.5,
-                    ),
-                  ),
-                  child: ClipOval(
-                    child: Image.network(
-                      'https://i.pravatar.cc/34',
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                        color: const Color(0xFF4060D0),
-                        child: const Icon(
-                          Icons.person,
-                          color: Colors.white,
-                          size: 18,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Text(
-                  'Moussa · Dakar-Plateau',
-                  style: ThemeApplication.corpsMedium.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
-                  ),
-                ),
-              ],
-            ),
-
-            // Notif
-            Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.15),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.notifications_outlined,
-                color: Colors.white,
-                size: 18,
-              ),
-            ),
-          ],
-        ),
+        onScanTap: () {
+          // TODO : Navigator.pushNamed(context, Routes.cameraDocument)
+        },
       ),
     );
   }
 }
 
 // ─────────────────────────────────────────────────────────────────
-// CARTE SCANNER HERO
+// CARTE SCANNER
 // ─────────────────────────────────────────────────────────────────
-
 class _CarteScan extends StatefulWidget {
   const _CarteScan();
 
@@ -275,7 +181,6 @@ class _CarteScanState extends State<_CarteScan>
 
           const SizedBox(height: 28),
 
-          // Bouton Lancer le scan
           GestureDetector(
             onTap: () {
               // TODO : Navigator.pushNamed(context, Routes.cameraDocument)
@@ -297,16 +202,9 @@ class _CarteScanState extends State<_CarteScan>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
-                    Icons.camera_alt_outlined,
-                    color: Colors.white,
-                    size: 20,
-                  ),
+                  const Icon(Icons.camera_alt_outlined, color: Colors.white, size: 20),
                   const SizedBox(width: 10),
-                  Text(
-                    'Lancer le scan',
-                    style: ThemeApplication.labelBouton,
-                  ),
+                  Text('Lancer le scan', style: ThemeApplication.labelBouton),
                 ],
               ),
             ),
@@ -320,7 +218,6 @@ class _CarteScanState extends State<_CarteScan>
 // ─────────────────────────────────────────────────────────────────
 // ACTIONS RAPIDES
 // ─────────────────────────────────────────────────────────────────
-
 class _ActionsRapides extends StatelessWidget {
   const _ActionsRapides();
 
@@ -386,106 +283,103 @@ class _CarteAction extends StatelessWidget {
             ),
           ],
         ),
-       child: SizedBox(
-  width: double.infinity,
-  child: Stack(
-    clipBehavior: Clip.none,
-    children: [
-      Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: couleurFondIcone,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                icone,
-                size: 22,
-                color: ThemeApplication.couleurTexte,
-              ),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              style: ThemeApplication.labelSecondaire.copyWith(
-                fontSize: 12,
-                color: const Color(0xFF1A1C1E),
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-      ),
-
-      // Badge
-      if (badge != null)
-        Positioned(
-          top: -10,
-          right: -10,
-          child: Container(
-            height: 22,
-            padding: const EdgeInsets.symmetric(horizontal: 7),
-            decoration: BoxDecoration(
-              color: ThemeApplication.couleurDanger,
-              borderRadius: BorderRadius.circular(9999),
-              border: Border.all(color: Colors.white, width: 2),
-            ),
-            child: Center(
-              child: Text(
-                badge!,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
+        child: SizedBox(
+          width: double.infinity,
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: couleurFondIcone,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        icone,
+                        size: 22,
+                        color: ThemeApplication.couleurTexte,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      label,
+                      textAlign: TextAlign.center,
+                      style: ThemeApplication.labelSecondaire.copyWith(
+                        fontSize: 12,
+                        color: const Color(0xFF1A1C1E),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ),
+
+              // Badge
+              if (badge != null)
+                Positioned(
+                  top: -10,
+                  right: -10,
+                  child: Container(
+                    height: 22,
+                    padding: const EdgeInsets.symmetric(horizontal: 7),
+                    decoration: BoxDecoration(
+                      color: ThemeApplication.couleurDanger,
+                      borderRadius: BorderRadius.circular(9999),
+                      border: Border.all(color: Colors.white, width: 2),
+                    ),
+                    child: Center(
+                      child: Text(
+                        badge!,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
           ),
         ),
-    ],
-  ),
-), ),
+      ),
     );
   }
 }
 
 // ─────────────────────────────────────────────────────────────────
-// SECTION ACTIVITÉS RÉCENTES
+// SECTION ACTIVITÉS — utilise WidgetCarteActivite
 // ─────────────────────────────────────────────────────────────────
-
 class _SectionActivites extends StatelessWidget {
-  const _SectionActivites();
 
   static const _activites = [
-    _DonneesActivite(
+    DonneesActivite(
       nom: 'Moussa Diop',
       info: 'Il y a 10 min • Dakar',
       statut: 'SYNCHRONISÉ',
       couleurFond: Color(0xFFDCFCE7),
       couleurTexte: Color(0xFF15803D),
     ),
-    _DonneesActivite(
+    DonneesActivite(
       nom: 'Fatou Ndiaye',
       info: 'Il y a 45 min • Thiès',
       statut: 'EN COURS',
       couleurFond: Color(0xFFDBEAFE),
       couleurTexte: Color(0xFF1D4ED8),
     ),
-    _DonneesActivite(
+    DonneesActivite(
       nom: 'Amadou Fall',
       info: 'Hier, 18:24 • Saint-Louis',
       statut: 'HORS-LIGNE',
       couleurFond: Color(0xFFEEEEF0),
       couleurTexte: Color(0xFF464554),
     ),
-    _DonneesActivite(
+    DonneesActivite(
       nom: 'Khady Seck',
       info: 'Hier, 15:10 • Kaolack',
       statut: 'SYNCHRONISÉ',
@@ -499,7 +393,7 @@ class _SectionActivites extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // En-tête section
+        // ── En-tête section ─────────────────────────────────────
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -512,7 +406,7 @@ class _SectionActivites extends StatelessWidget {
               ),
             ),
             GestureDetector(
-              onTap: () {},
+              onTap: () => Navigator.pushNamed(context, Routes.mesSignalements),
               child: Text(
                 'Voir tout',
                 style: ThemeApplication.labelSecondaire.copyWith(
@@ -526,257 +420,15 @@ class _SectionActivites extends StatelessWidget {
 
         const SizedBox(height: 16),
 
-        // Liste des activités
+        // ── Liste avec WidgetCarteActivite ───────────────────────
         ...List.generate(
           _activites.length,
           (i) => Padding(
             padding: const EdgeInsets.only(bottom: 12),
-            child: _CarteActivite(donnees: _activites[i]),
+            child: WidgetCarteActivite(donnees: _activites[i]),
           ),
         ),
       ],
     );
   }
-}
-
-// Modèle de données local (immuable)
-class _DonneesActivite {
-  final String nom;
-  final String info;
-  final String statut;
-  final Color couleurFond;
-  final Color couleurTexte;
-
-  const _DonneesActivite({
-    required this.nom,
-    required this.info,
-    required this.statut,
-    required this.couleurFond,
-    required this.couleurTexte,
-  });
-}
-
-class _CarteActivite extends StatelessWidget {
-  final _DonneesActivite donnees;
-
-  const _CarteActivite({required this.donnees});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: ThemeApplication.blanc,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x08000000),
-            blurRadius: 4,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // Avatar + infos
-          Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: const BoxDecoration(
-                  color: Color(0xFFEEEEF0),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.person_outline,
-                  size: 24,
-                  color: Color(0xFF464554),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    donnees.nom,
-                    style: ThemeApplication.corpsMedium.copyWith(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: const Color(0xFF1A1C1E),
-                    ),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    donnees.info,
-                    style: ThemeApplication.legende.copyWith(
-                      fontSize: 12,
-                      color: const Color(0xFF464554),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-
-          // Badge statut
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-            decoration: BoxDecoration(
-              color: donnees.couleurFond,
-              borderRadius: BorderRadius.circular(9999),
-            ),
-            child: Text(
-              donnees.statut,
-              style: TextStyle(
-                color: donnees.couleurTexte,
-                fontSize: 10,
-                fontFamily: 'Montserrat',
-                fontWeight: FontWeight.w700,
-                letterSpacing: 0.5,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────
-// BOTTOM NAVIGATION BAR FIXE
-// ─────────────────────────────────────────────────────────────────
-
-class _BarreNavigation extends StatelessWidget {
-  final int indexCourant;
-  final ValueChanged<int> onTap;
-
-  const _BarreNavigation({
-    required this.indexCourant,
-    required this.onTap,
-  });
-
-  static const _items = [
-    _ItemNavData(icone: Icons.home_outlined, iconeActif: Icons.home_rounded, label: 'Home'),
-    _ItemNavData(icone: Icons.contacts_outlined, iconeActif: Icons.contacts_rounded, label: 'Contacts'),
-    _ItemNavData(icone: Icons.notifications_outlined, iconeActif: Icons.notifications_rounded, label: 'Notifs'),
-    _ItemNavData(icone: Icons.settings_outlined, iconeActif: Icons.settings_rounded, label: 'Réglages'),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Color(0x0F000000),
-            blurRadius: 24,
-            offset: Offset(0, -4),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        top: false,
-        child: SizedBox(
-          height: 68,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              // Item 0 - Home
-              _buildItem(0),
-              // Item 1 - Contacts
-              _buildItem(1),
-
-              // ── Bouton SCAN central surélevé ─────────────────────
-              GestureDetector(
-                onTap: () {
-                  // TODO : Navigator.pushNamed(context, Routes.cameraDocument)
-                },
-                child: Container(
-                  width: 58,
-                  height: 58,
-                  margin: const EdgeInsets.only(bottom: 8),
-                  decoration: BoxDecoration(
-                    color: ThemeApplication.couleurPrimaire,
-                    shape: BoxShape.circle,
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color(0x664749CD),
-                        blurRadius: 14,
-                        offset: Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: const Icon(
-                    Icons.document_scanner_outlined,
-                    color: Colors.white,
-                    size: 26,
-                  ),
-                ),
-              ),
-
-              // Item 2 - Notifications
-              _buildItem(2),
-              // Item 3 - Réglages
-              _buildItem(3),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildItem(int index) {
-    // Décalage d'index : 0,1 avant le scan, 2,3 pour les items après
-    final itemIndex = index < 2 ? index : index + 1;
-    final estActif = indexCourant == itemIndex;
-    final item = _items[index];
-
-    return GestureDetector(
-      onTap: () => onTap(itemIndex),
-      behavior: HitTestBehavior.opaque,
-      child: SizedBox(
-        width: 60,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              estActif ? item.iconeActif : item.icone,
-              size: 24,
-              color: estActif
-                  ? ThemeApplication.couleurPrimaire
-                  : const Color(0xFF888888),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              item.label,
-              style: TextStyle(
-                fontSize: 11,
-                fontFamily: 'Montserrat',
-                fontWeight: estActif ? FontWeight.w600 : FontWeight.w400,
-                color: estActif
-                    ? ThemeApplication.couleurPrimaire
-                    : const Color(0xFF888888),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ItemNavData {
-  final IconData icone;
-  final IconData iconeActif;
-  final String label;
-
-  const _ItemNavData({
-    required this.icone,
-    required this.iconeActif,
-    required this.label,
-  });
 }
