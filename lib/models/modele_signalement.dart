@@ -71,3 +71,4 @@ class ModeleSignalement {
     return nom.substring(0, 2).toUpperCase();
   }
 }
+

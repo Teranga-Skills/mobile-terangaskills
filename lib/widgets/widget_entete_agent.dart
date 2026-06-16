@@ -41,18 +41,18 @@ class EnteteAgent extends StatelessWidget {
                 child: GestureDetector(
                   onTap: () {
                     Navigator.push(
-    context,
-    PageRouteBuilder(
-      transitionDuration: const Duration(milliseconds: 250),
-      pageBuilder: (_, animation, _) => const EcranProfil(),
-      transitionsBuilder: (_, animation, _, child) {
-        return FadeTransition(
-          opacity: animation,
-          child: child,
-        );
-      },
-    ),
-  );
+                  context,
+                  PageRouteBuilder(
+                    transitionDuration: const Duration(milliseconds: 250),
+                    pageBuilder: (_, animation, _) => const EcranProfil(),
+                    transitionsBuilder: (_, animation, _, child) {
+                      return FadeTransition(
+                        opacity: animation,
+                        child: child,
+                      );
+                    },
+                  ),
+                );
                   },
                   child: ClipOval(
                     child: Image.network(
