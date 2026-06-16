@@ -3,6 +3,7 @@
 // -----------------------------------------------------------------
 
 import 'package:flutter/material.dart';
+import 'package:teranga_skills/ecrans/agent/ecran_profil.dart';
 import '../ecrans/splash/ecran_splash.dart';
 import '../ecrans/authentification/ecran_connexion.dart';
 import '../ecrans/agent/ecran_accueil_agent.dart';
@@ -27,5 +28,6 @@ class Routes {
     onboarding: (_) => const EcranOnboarding(),
     connexion: (_) => const PageConnexion(),
     accueilAgent:(_) => const EcranAccueilAgent(),
+    '/profile': (_) => const EcranProfil(),
   };
 }
