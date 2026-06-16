@@ -156,7 +156,7 @@ class _VuePageOnboarding extends StatelessWidget {
           Center(
             child: CarteIllustration(
               couleur: page.couleurIllustration,
-              icone: page.iconeIllustration,
+              cheminSvg: page.cheminSvg,
             ),
           ),
           const SizedBox(height: 48),

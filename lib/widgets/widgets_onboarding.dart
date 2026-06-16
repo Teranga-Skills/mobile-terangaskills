@@ -4,39 +4,42 @@
 
 import 'package:flutter/material.dart';
 import '../../configuration/theme.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 // ─── Carte illustration ──────────────────────────────────────────
 
 class CarteIllustration extends StatelessWidget {
   final Color couleur;
-  final IconData icone;
+  final String cheminSvg;
 
   const CarteIllustration({
     super.key,
     required this.couleur,
-    required this.icone,
+    required this.cheminSvg,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 220,
-      height: 220,
+      width: 280,
+      height: 280,
+      padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
-        color: couleur,
+        
         borderRadius: BorderRadius.circular(32),
       ),
-      child: Icon(
-        icone,
-        size: 96,
-        color: couleur.computeLuminance() > 0.5
-            ? ThemeApplication.couleurPrimaire.withOpacity(0.8)
-            : ThemeApplication.blanc,
+      child: SvgPicture.asset(
+        cheminSvg,
+        fit: BoxFit.contain,
+        // colorFilter si tu veux forcer une couleur sur le SVG :
+        // colorFilter: ColorFilter.mode(
+        //   ThemeApplication.couleurPrimaire,
+        //   BlendMode.srcIn,
+        // ),
       ),
     );
   }
 }
-
 // ─── Note informative ────────────────────────────────────────────
 
 class CarteNote extends StatelessWidget {

@@ -9,14 +9,14 @@ class ModelePageOnboarding {
   final String sousTitre;
   final String? note;
   final Color couleurIllustration;
-  final IconData iconeIllustration;
+  final String cheminSvg; 
 
   const ModelePageOnboarding({
     required this.titre,
     required this.sousTitre,
     this.note,
     required this.couleurIllustration,
-    required this.iconeIllustration,
+    required this.cheminSvg,
   });
 }
 
@@ -29,7 +29,7 @@ const List<ModelePageOnboarding> pagesOnboarding = [
     note:
         'Vous êtes en première ligne pour défendre chaque citoyen contre la fraude documentaire.',
     couleurIllustration: Color(0xFFE8F0FE),
-    iconeIllustration: Icons.shield_outlined,
+    cheminSvg: 'assets/icones/onboarding_gardiens.svg',
   ),
   ModelePageOnboarding(
     titre: 'Simple.\nRapide.\nIntelligent.',
@@ -37,7 +37,7 @@ const List<ModelePageOnboarding> pagesOnboarding = [
     note:
         'Pas de réseau ? Aucun problème. Vos signalements sont sauvegardés et synchronisés dès que la connexion revient.',
     couleurIllustration: Color(0xFFE6F4EA),
-    iconeIllustration: Icons.document_scanner_outlined,
+    cheminSvg: 'assets/icones/onboarding_scanner.svg',
   ),
   ModelePageOnboarding(
     titre: 'Votre mission\ncommence ici',
@@ -45,6 +45,6 @@ const List<ModelePageOnboarding> pagesOnboarding = [
     note:
         'Vos données sont chiffrées. Chaque action est tracée dans un journal d\'audit sécurisé.',
     couleurIllustration: Color(0xFFFCE8E6),
-    iconeIllustration: Icons.verified_user_outlined,
+    cheminSvg: 'assets/icones/onboarding_mission.svg',
   ),
 ];
