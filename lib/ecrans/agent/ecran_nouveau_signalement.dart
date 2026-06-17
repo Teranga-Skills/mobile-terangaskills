@@ -29,6 +29,7 @@ class _EcranNouveauSignalementState extends State<EcranNouveauSignalement> {
 
   String _typeDocument = 'CIN';
   bool _donneesInitialisees = false;
+  String? _cheminImage;
 
   final List<String> _typesDocuments = [
     'CIN',
@@ -67,6 +68,7 @@ class _EcranNouveauSignalementState extends State<EcranNouveauSignalement> {
         _nationaliteController.text = arguments['nationalite'] ?? 'Sénégalaise';
         _lieuController.text = arguments['lieu'] ?? '';
         _noteAgentController.text = arguments['noteAgent'] ?? '';
+        _cheminImage = arguments['cheminImage'];
       } else {
         // Obtenir la zone de l'agent connecté par défaut pour le lieu
         final authProvider = Provider.of<ProviderAuthentification>(context, listen: false);
@@ -102,6 +104,7 @@ class _EcranNouveauSignalementState extends State<EcranNouveauSignalement> {
       'nationalite': _nationaliteController.text.trim(),
       'lieu': _lieuController.text.trim(),
       'noteAgent': _noteAgentController.text.trim(),
+      'cheminImage': _cheminImage,
     };
 
     final estSynchronise = await provider.soumettreSignalement(donneesFormulaire);

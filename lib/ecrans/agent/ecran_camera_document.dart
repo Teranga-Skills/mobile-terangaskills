@@ -70,7 +70,8 @@ class _EcranCameraDocumentState extends State<EcranCameraDocument> {
     if (!mounted) return;
 
     if (resultatOcr != null) {
-      // Aller à l'écran formulaire avec les données extraites
+      // Aller à l'écran formulaire avec les données extraites et le chemin de l'image
+      resultatOcr['cheminImage'] = _imageSelectionnee!.path;
       Navigator.pushReplacementNamed(
         context,
         Routes.nouveauSignalement,
@@ -78,11 +79,13 @@ class _EcranCameraDocumentState extends State<EcranCameraDocument> {
       );
     } else {
       _afficherErreur("L'analyse du document a échoué. Passage en mode manuel.");
-      // Mode dégradé : formulaire vide
+      // Mode dégradé : formulaire vide avec le chemin de l'image
       Navigator.pushReplacementNamed(
         context,
         Routes.nouveauSignalement,
-        arguments: <String, dynamic>{},
+        arguments: <String, dynamic>{
+          'cheminImage': _imageSelectionnee?.path,
+        },
       );
     }
   }

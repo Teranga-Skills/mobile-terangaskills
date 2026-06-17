@@ -142,6 +142,7 @@ class ProviderSignalements extends ChangeNotifier {
       dateNaissance: donneesFormulaire['dateNaissance'],
       nationalite: donneesFormulaire['nationalite'],
       noteAgent: donneesFormulaire['noteAgent'],
+      cheminImage: donneesFormulaire['cheminImage'],
     );
 
     _fileAttenteHorsLigne.add(nouveauSignalementHorsLigne);
@@ -251,6 +252,7 @@ class ProviderSignalements extends ChangeNotifier {
       dateNaissance: json['dateNaissance'],
       nationalite: json['nationalite'],
       noteAgent: json['noteAgent'],
+      cheminImage: json['cheminImage'],
     );
   }
 
@@ -282,6 +284,7 @@ class ProviderSignalements extends ChangeNotifier {
       'dateNaissance': s.dateNaissance,
       'nationalite': s.nationalite,
       'noteAgent': s.noteAgent,
+      'cheminImage': s.cheminImage,
     };
   }
 }

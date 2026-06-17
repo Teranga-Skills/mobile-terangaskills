@@ -317,6 +317,13 @@ class ServiceApi {
       if (responseActe.statusCode == 200 || responseActe.statusCode == 201) {
         final acteData = json.decode(utf8.decode(responseActe.bodyBytes));
         
+        // Uploader l'image associée si présente
+        final String? cheminImage = signalementJson['cheminImage'];
+        final String acteId = acteData['id']?.toString() ?? '';
+        if (cheminImage != null && cheminImage.isNotEmpty && acteId.isNotEmpty) {
+          await uploaderDocument(acteId, cheminImage);
+        }
+
         // Renvoyer le signalement formaté pour le frontend
         return {
           'id': acteData['id']?.toString() ?? '',
@@ -329,6 +336,7 @@ class ServiceApi {
           'dateNaissance': signalementJson['dateNaissance'],
           'nationalite': signalementJson['nationalite'] ?? 'Sénégalaise',
           'noteAgent': signalementJson['noteAgent'] ?? '',
+          'cheminImage': cheminImage,
         };
       } else {
         throw Exception('Erreur lors de la création de l\'acte (${responseActe.statusCode})');
@@ -349,7 +357,8 @@ class ServiceApi {
         request.headers['Authorization'] = 'Bearer $token';
       }
       
-      request.files.add(await http.MultipartFile.fromPath('file', cheminImage));
+      // On utilise 'document' pour correspondre aux attentes originelles du backend
+      request.files.add(await http.MultipartFile.fromPath('document', cheminImage));
       
       // On envoie le fichier de scan
       final streamedResponse = await request.send();
@@ -359,8 +368,18 @@ class ServiceApi {
       if (response.statusCode == 200 || response.statusCode == 201) {
         try {
           final resJson = json.decode(utf8.decode(response.bodyBytes));
-          if (resJson is Map<String, dynamic> && resJson.containsKey('nom')) {
-            return resJson;
+          if (resJson is Map<String, dynamic>) {
+            // Si le backend renvoie le format avec extracted_data imbriqué
+            if (resJson.containsKey('extracted_data')) {
+              final extracted = resJson['extracted_data'];
+              if (extracted is Map<String, dynamic> && extracted.containsKey('nom')) {
+                return Map<String, dynamic>.from(extracted);
+              }
+            }
+            // Sinon format plat direct
+            if (resJson.containsKey('nom')) {
+              return resJson;
+            }
           }
         } catch (_) {}
       }
@@ -383,6 +402,34 @@ class ServiceApi {
         "lieu": "Ziguinchor",
         "noteAgent": "Extrait automatique (mode dégradé)."
       };
+    }
+  }
+
+  // Uploader le document scanné associé à un acte d'état civil
+  Future<void> uploaderDocument(String acteId, String cheminImage) async {
+    try {
+      final token = await _getToken();
+      final url = Uri.parse('${Constantes.urlBaseApi}/api/documents/');
+      
+      final request = http.MultipartRequest('POST', url);
+      if (token != null) {
+        request.headers['Authorization'] = 'Bearer $token';
+      }
+      
+      request.fields['acte'] = acteId;
+      request.fields['qualite_scan'] = '100.0';
+      request.files.add(await http.MultipartFile.fromPath('fichier', cheminImage));
+      
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+      
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        debugPrint('Erreur lors de l\'upload du document (${response.statusCode}) : ${response.body}');
+      } else {
+        debugPrint('Document image uploade avec succes pour l\'acte $acteId');
+      }
+    } catch (e) {
+      debugPrint('Erreur reseau lors de l\'upload du document : $e');
     }
   }
 

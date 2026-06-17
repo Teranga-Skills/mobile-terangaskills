@@ -49,6 +49,7 @@ class ModeleSignalement {
   final String? dateNaissance;
   final String? nationalite;
   final String? noteAgent;
+  final String? cheminImage;
 
   const ModeleSignalement({
     required this.id,
@@ -61,6 +62,7 @@ class ModeleSignalement {
     this.dateNaissance,
     this.nationalite,
     this.noteAgent,
+    this.cheminImage,
   });
 
   String get initiales {
