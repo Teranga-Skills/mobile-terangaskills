@@ -25,6 +25,13 @@ class WidgetChampTexte extends StatefulWidget {
 
 class _WidgetChampTexteState extends State<WidgetChampTexte> {
   String? _erreur;
+  late bool _obscureText;
+
+  @override
+  void initState() {
+    super.initState();
+    _obscureText = widget.estMotDePasse;
+  }
 
   // Appelée par PageConnexion via la clé du Form
   void valider() {
@@ -44,7 +51,7 @@ class _WidgetChampTexteState extends State<WidgetChampTexte> {
           child: TextFormField(
             controller: widget.controller,
             keyboardType: widget.clavier,
-            obscureText: widget.estMotDePasse,
+            obscureText: _obscureText,
             validator: widget.validateur,
             // Pas d'autovalidation — on contrôle nous-mêmes
             autovalidateMode: AutovalidateMode.disabled,
@@ -92,13 +99,28 @@ class _WidgetChampTexteState extends State<WidgetChampTexte> {
                   width: 1.5,
                 ),
               ),
-              suffixIcon: Icon(
-                widget.icone,
-                size: 20,
-                color: _erreur != null
-                    ? ThemeApplication.couleurDanger
-                    : ThemeApplication.couleurTexteSecondaire,
-              ),
+              suffixIcon: widget.estMotDePasse
+                  ? IconButton(
+                      icon: Icon(
+                        _obscureText
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
+                        size: 20,
+                        color: _erreur != null
+                            ? ThemeApplication.couleurDanger
+                            : ThemeApplication.couleurTexteSecondaire,
+                      ),
+                      onPressed: () {
+                        setState(() => _obscureText = !_obscureText);
+                      },
+                    )
+                  : Icon(
+                      widget.icone,
+                      size: 20,
+                      color: _erreur != null
+                          ? ThemeApplication.couleurDanger
+                          : ThemeApplication.couleurTexteSecondaire,
+                    ),
             ),
             onChanged: (_) {
               // Efface l'erreur dès que l'utilisateur retape
