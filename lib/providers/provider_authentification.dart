@@ -55,6 +55,7 @@ class ProviderAuthentification extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(Constantes.cleUtilisateur, json.encode(userMap));
       await prefs.setString(Constantes.cleToken, _utilisateurCourant!.token);
+      await prefs.setString(Constantes.cleRefreshToken, userMap['refreshToken'] ?? '');
 
       _chargement = false;
       notifyListeners();
@@ -69,16 +70,30 @@ class ProviderAuthentification extends ChangeNotifier {
 
   // Déconnexion
   Future<void> seDeconnecter() async {
-    _utilisateurCourant = null;
+    _chargement = true;
     _erreur = null;
     notifyListeners();
 
     try {
+      // 1. Appeler l'API de déconnexion du backend pour révoquer le token
+      await _serviceApi.seDeconnecter();
+    } catch (e) {
+      debugPrint('Erreur lors de la déconnexion backend : $e');
+    }
+
+    // 2. Nettoyer les données locales dans tous les cas
+    _utilisateurCourant = null;
+    
+    try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(Constantes.cleUtilisateur);
       await prefs.remove(Constantes.cleToken);
+      await prefs.remove(Constantes.cleRefreshToken);
     } catch (e) {
-      debugPrint('Erreur lors de la déconnexion : $e');
+      debugPrint('Erreur lors de la déconnexion locale : $e');
     }
+
+    _chargement = false;
+    notifyListeners();
   }
 }

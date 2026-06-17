@@ -62,6 +62,7 @@ class ServiceApi {
           'zone': userObj['zone'] ?? 'Dakar-Plateau',
           'telephone': userObj['telephone'] ?? '',
           'token': data['access'] ?? '',
+          'refreshToken': data['refresh'] ?? '',
         };
       } else {
         final Map<String, dynamic> errData = json.decode(response.body);
@@ -71,6 +72,38 @@ class ServiceApi {
     } catch (e) {
       if (e is Exception) rethrow;
       throw Exception('Erreur réseau ou serveur indisponible : $e');
+    }
+  }
+
+  // Déconnexion du serveur backend
+  Future<void> seDeconnecter() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final refreshToken = prefs.getString(Constantes.cleRefreshToken);
+      final token = prefs.getString(Constantes.cleToken);
+
+      if (refreshToken != null && refreshToken.isNotEmpty) {
+        final url = Uri.parse('${Constantes.urlBaseApi}${Constantes.endpointDeconnexion}');
+        final headers = {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        };
+        if (token != null && token.isNotEmpty) {
+          headers['Authorization'] = 'Bearer $token';
+        }
+
+        final response = await http.post(
+          url,
+          headers: headers,
+          body: json.encode({'refresh': refreshToken}),
+        ).timeout(const Duration(seconds: Constantes.timeoutSecondes));
+
+        if (response.statusCode != 200 && response.statusCode != 204 && response.statusCode != 205) {
+          debugPrint('Avertissement déconnexion API code: ${response.statusCode}');
+        }
+      }
+    } catch (e) {
+      debugPrint('Erreur lors de la déconnexion réseau backend : $e');
     }
   }
 
