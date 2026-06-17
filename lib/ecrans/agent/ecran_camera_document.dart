@@ -22,6 +22,15 @@ class _EcranCameraDocumentState extends State<EcranCameraDocument> {
   XFile? _imageSelectionnee;
   bool _analyseEnCours = false;
 
+  @override
+  void initState() {
+    super.initState();
+    // Ouvrir automatiquement la caméra après le premier rendu
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _prendrePhoto();
+    });
+  }
+
   // Prendre une photo avec la caméra
   Future<void> _prendrePhoto() async {
     try {
@@ -33,26 +42,17 @@ class _EcranCameraDocumentState extends State<EcranCameraDocument> {
         setState(() {
           _imageSelectionnee = photo;
         });
+      } else if (_imageSelectionnee == null) {
+        // Si l'utilisateur annule la prise de photo lors du chargement initial
+        if (mounted) {
+          Navigator.pop(context);
+        }
       }
     } catch (e) {
       _afficherErreur("Impossible d'ouvrir l'appareil photo : $e");
-    }
-  }
-
-  // Choisir un fichier depuis la galerie
-  Future<void> _choisirGalerie() async {
-    try {
-      final XFile? image = await _picker.pickImage(
-        source: ImageSource.gallery,
-        imageQuality: 85,
-      );
-      if (image != null) {
-        setState(() {
-          _imageSelectionnee = image;
-        });
+      if (mounted && _imageSelectionnee == null) {
+        Navigator.pop(context);
       }
-    } catch (e) {
-      _afficherErreur("Impossible d'accéder à la galerie : $e");
     }
   }
 
@@ -167,25 +167,10 @@ class _EcranCameraDocumentState extends State<EcranCameraDocument> {
 
                 // ─── Actions du bas ──────────────────────────────────────────
                 if (_imageSelectionnee == null)
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _construireBoutonOption(
-                          label: 'Galerie',
-                          icone: Icons.photo_library_outlined,
-                          onTap: _choisirGalerie,
-                          estSecondaire: true,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: _construireBoutonOption(
-                          label: 'Prendre Photo',
-                          icone: Icons.camera_alt_rounded,
-                          onTap: _prendrePhoto,
-                        ),
-                      ),
-                    ],
+                  _construireBoutonOption(
+                    label: 'Ouvrir l\'appareil photo',
+                    icone: Icons.camera_alt_rounded,
+                    onTap: _prendrePhoto,
                   )
                 else
                   Column(
