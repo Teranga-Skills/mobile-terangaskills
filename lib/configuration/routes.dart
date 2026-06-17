@@ -4,6 +4,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:teranga_skills/ecrans/agent/ecran_profil.dart';
+import 'package:teranga_skills/ecrans/agent/ecrant_sync.dart';
 import '../ecrans/splash/ecran_splash.dart';
 import '../ecrans/authentification/ecran_connexion.dart';
 import '../ecrans/agent/ecran_accueil_agent.dart';
@@ -24,6 +25,7 @@ class Routes {
   static const String cameraDocument = '/agent/signalement/camera';
   static const String mesSignalements = '/agent/signalements';
   
+static const String synchronisation = '/agent/sync';
 
   static Map<String, WidgetBuilder> get toutes => {
     splash:       (_) => const EcranSplash(),   
@@ -32,5 +34,6 @@ class Routes {
     accueilAgent:(_) => const EcranAccueilAgent(),
     '/profile': (_) => const EcranProfil(),
     mesSignalements: (_) => const EcranMesSignalements(),
+    synchronisation: (_) => const EcranSynchronisation(),
   };
 }

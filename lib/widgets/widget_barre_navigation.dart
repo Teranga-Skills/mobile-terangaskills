@@ -42,9 +42,9 @@ class WidgetBarreNavigation extends StatelessWidget {
       label: 'Signals',             
     ),
     _ItemNavData(
-      icone: Icons.notifications_outlined,
-      iconeActif: Icons.notifications_rounded,
-      label: 'Notifs',
+      icone: Icons.sync_rounded,
+      iconeActif: Icons.sync_alt_rounded,
+      label: 'Sync',
     ),
     _ItemNavData(
       icone: Icons.settings_outlined,
@@ -125,6 +125,9 @@ class WidgetBarreNavigation extends StatelessWidget {
             break;
           case 1:
             Navigator.pushReplacementNamed(context, Routes.mesSignalements);
+            break;
+          case 3:
+            Navigator.pushReplacementNamed(context, Routes.synchronisation);
             break;
           default:
             onTap(itemIndex);
