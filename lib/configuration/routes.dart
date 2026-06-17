@@ -24,7 +24,8 @@ class Routes {
   static const String nouveauSignalement = '/agent/signalement/nouveau';
   static const String cameraDocument = '/agent/signalement/camera';
   static const String mesSignalements = '/agent/signalements';
-  
+  static const String profilAgent = '/agent/profil';
+
 static const String synchronisation = '/agent/sync';
 
   static Map<String, WidgetBuilder> get toutes => {
@@ -32,7 +33,7 @@ static const String synchronisation = '/agent/sync';
     onboarding: (_) => const EcranOnboarding(),
     connexion: (_) => const PageConnexion(),
     accueilAgent:(_) => const EcranAccueilAgent(),
-    '/profile': (_) => const EcranProfil(),
+    profilAgent: (_) => const EcranProfil(),
     mesSignalements: (_) => const EcranMesSignalements(),
     synchronisation: (_) => const EcranSynchronisation(),
     nouveauSignalement: (_) => const EcranNouveauSignalement(),

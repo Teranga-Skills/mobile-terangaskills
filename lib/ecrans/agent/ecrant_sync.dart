@@ -5,83 +5,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import '../../configuration/theme.dart';
 import '../../widgets/widget_barre_navigation.dart';
-
-// ─── Modèle local ────────────────────────────────────────────────
-
-enum StatutSync { enAttente, enCours, succes, erreur }
-
-class _DocumentSync {
-  final String id;
-  final String typeDocument;
-  final String date;
-  final String lieu;
-  final StatutSync statut;
-  final String? imageUrl;
-
-  const _DocumentSync({
-    required this.id,
-    required this.typeDocument,
-    required this.date,
-    required this.lieu,
-    required this.statut,
-    this.imageUrl,
-  });
-
-  String get libelle {
-    switch (statut) {
-      case StatutSync.enAttente: return 'EN ATTENTE';
-      case StatutSync.enCours:   return 'EN COURS';
-      case StatutSync.succes:    return 'SYNCHRONISÉ';
-      case StatutSync.erreur:    return 'ERREUR';
-    }
-  }
-
-  Color get couleurFond {
-    switch (statut) {
-      case StatutSync.enAttente: return const Color(0xFFFFDBCB);
-      case StatutSync.enCours:   return const Color(0xFFDBEAFE);
-      case StatutSync.succes:    return const Color(0xFFDCFCE7);
-      case StatutSync.erreur:    return const Color(0xFFFFE4E4);
-    }
-  }
-
-  Color get couleurTexte {
-    switch (statut) {
-      case StatutSync.enAttente: return const Color(0xFF341100);
-      case StatutSync.enCours:   return const Color(0xFF1D4ED8);
-      case StatutSync.succes:    return const Color(0xFF15803D);
-      case StatutSync.erreur:    return const Color(0xFFC0392B);
-    }
-  }
-}
-
-// ─── Données mock ─────────────────────────────────────────────────
-
-const _documentsEnAttente = [
-  _DocumentSync(
-    id: '001',
-    typeDocument: 'Extrait de Naissance',
-    date: '18 Mai 2024 • 14:22',
-    lieu: 'Mairie de Dakar Plateau',
-    statut: StatutSync.enAttente,
-  ),
-  _DocumentSync(
-    id: '002',
-    typeDocument: 'Casier Judiciaire',
-    date: '18 Mai 2024 • 10:45',
-    lieu: 'Tribunal de Saint-Louis',
-    statut: StatutSync.enAttente,
-  ),
-  _DocumentSync(
-    id: '003',
-    typeDocument: 'Certificat de Résidence',
-    date: '17 Mai 2024 • 16:30',
-    lieu: 'Commissariat Central de Thiès',
-    statut: StatutSync.enAttente,
-  ),
-];
+import '../../widgets/widget_carte_signalement.dart';
+import '../../providers/provider_signalements.dart';
+import 'ecran_mes_signalements.dart';
 
 // ─────────────────────────────────────────────────────────────────
 // ÉCRAN PRINCIPAL
@@ -94,71 +23,8 @@ class EcranSynchronisation extends StatefulWidget {
   State<EcranSynchronisation> createState() => _EcranSynchronisationState();
 }
 
-class _EcranSynchronisationState extends State<EcranSynchronisation>
-    with SingleTickerProviderStateMixin {
+class _EcranSynchronisationState extends State<EcranSynchronisation> {
   int _indexNav = 2; // onglet Sync actif
-  bool _syncEnCours = false;
-  double _progression = 0.0;
-
-  late final AnimationController _progressCtrl;
-  late final Animation<double> _progressAnim;
-
-  @override
-  void initState() {
-    super.initState();
-    _progressCtrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 800),
-    );
-    _progressAnim = CurvedAnimation(
-      parent: _progressCtrl,
-      curve: Curves.easeInOut,
-    );
-  }
-
-  @override
-  void dispose() {
-    _progressCtrl.dispose();
-    super.dispose();
-  }
-
-  // ── Lancer la synchronisation (simulation) ───────────────────────
-  Future<void> _lancerSync() async {
-    setState(() {
-      _syncEnCours = true;
-      _progression = 0.0;
-    });
-
-    // Simulation progression par étapes
-    for (final p in [0.2, 0.45, 0.6, 0.80, 1.0]) {
-      await Future.delayed(const Duration(milliseconds: 600));
-      if (!mounted) return;
-      setState(() => _progression = p);
-    }
-
-    await Future.delayed(const Duration(milliseconds: 400));
-    if (!mounted) return;
-    setState(() => _syncEnCours = false);
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.check_circle_outline, color: Colors.white, size: 18),
-            const SizedBox(width: 10),
-            Text(
-              '${_documentsEnAttente.length} documents synchronisés',
-              style: const TextStyle(fontFamily: 'Montserrat', fontWeight: FontWeight.w600),
-            ),
-          ],
-        ),
-        backgroundColor: ThemeApplication.couleurSecondaire,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: const EdgeInsets.fromLTRB(16, 0, 16, 90),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -166,6 +32,9 @@ class _EcranSynchronisationState extends State<EcranSynchronisation>
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: Brightness.light,
     ));
+
+    final provider = Provider.of<ProviderSignalements>(context);
+    final documentsEnAttente = provider.fileAttenteHorsLigne;
 
     return Scaffold(
       backgroundColor: ThemeApplication.couleurFond,
@@ -183,13 +52,16 @@ class _EcranSynchronisationState extends State<EcranSynchronisation>
             automaticallyImplyLeading: false,
             flexibleSpace: FlexibleSpaceBar(
               collapseMode: CollapseMode.pin,
-              background: _EnteteSync(nbEnAttente: _documentsEnAttente.length),
+              background: _EnteteSync(nbEnAttente: documentsEnAttente.length),
             ),
           ),
 
           // ── Bannière hors-ligne ───────────────────────────────
           SliverToBoxAdapter(
-            child: _BanniereHorsLigne(nbEnAttente: _documentsEnAttente.length),
+            child: _BanniereHorsLigne(
+              nbEnAttente: documentsEnAttente.length,
+              estEnLigne: provider.estEnLigne,
+            ),
           ),
 
           // ── File d'attente ────────────────────────────────────
@@ -198,32 +70,73 @@ class _EcranSynchronisationState extends State<EcranSynchronisation>
             sliver: SliverToBoxAdapter(
               child: _TitreSection(
                 titre: 'File d\'attente',
-                sousTitre: '${_documentsEnAttente.length} rapports en attente de synchronisation',
+                sousTitre: '${documentsEnAttente.length} rapport${documentsEnAttente.length > 1 ? 's' : ''} en attente de synchronisation',
               ),
             ),
           ),
 
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-            sliver: SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, i) => Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: _CarteDocument(document: _documentsEnAttente[i]),
+          if (documentsEnAttente.isEmpty)
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(20, 40, 20, 0),
+              sliver: SliverToBoxAdapter(
+                child: Center(
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.cloud_done_outlined,
+                        size: 64,
+                        color: ThemeApplication.couleurPrimaire.withOpacity(0.3),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Aucun document en attente',
+                        style: ThemeApplication.corpsMedium.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                childCount: _documentsEnAttente.length,
+              ),
+            )
+          else
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, i) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: WidgetCarteSignalement(
+                      signalement: documentsEnAttente[i],
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => EcranDetailSignalement(
+                              signalement: documentsEnAttente[i],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  childCount: documentsEnAttente.length,
+                ),
               ),
             ),
-          ),
 
           // ── Carte sync ────────────────────────────────────────
           SliverPadding(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 140),
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 140),
             sliver: SliverToBoxAdapter(
               child: _CarteSync(
-                syncEnCours: _syncEnCours,
-                progression: _progression,
-                onSyncTap: _syncEnCours ? null : _lancerSync,
+                syncEnCours: provider.syncEnCours,
+                progression: provider.progressionSync,
+                nbDocuments: documentsEnAttente.length,
+                estEnLigne: provider.estEnLigne,
+                onSyncTap: (provider.syncEnCours || documentsEnAttente.isEmpty || !provider.estEnLigne)
+                    ? null
+                    : () => provider.synchroniserFileAttente(),
               ),
             ),
           ),
@@ -314,27 +227,35 @@ class _EnteteSync extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────
-// BANNIÈRE HORS-LIGNE
+// BANNIÈRE HORS-LIGNE / EN LIGNE
 // ─────────────────────────────────────────────────────────────────
 
 class _BanniereHorsLigne extends StatelessWidget {
   final int nbEnAttente;
+  final bool estEnLigne;
 
-  const _BanniereHorsLigne({required this.nbEnAttente});
+  const _BanniereHorsLigne({required this.nbEnAttente, required this.estEnLigne});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
       width: double.infinity,
-      color: ThemeApplication.couleurAvertissement,
+      color: estEnLigne ? ThemeApplication.couleurSecondaire : ThemeApplication.couleurAvertissement,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Row(
         children: [
-          const Icon(Icons.wifi_off_rounded, color: Colors.white, size: 18),
+          Icon(
+            estEnLigne ? Icons.wifi_rounded : Icons.wifi_off_rounded,
+            color: Colors.white,
+            size: 18,
+          ),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              'Les données seront synchronisées plus tard',
+              estEnLigne
+                  ? 'Vous êtes en ligne. Les rapports en attente peuvent être synchronisés.'
+                  : 'Mode Hors-ligne actif. Les données seront synchronisées plus tard.',
               style: ThemeApplication.corpsMedium.copyWith(
                 color: Colors.white,
                 fontWeight: FontWeight.w600,
@@ -386,151 +307,28 @@ class _TitreSection extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────
-// CARTE DOCUMENT EN ATTENTE
-// ─────────────────────────────────────────────────────────────────
-
-class _CarteDocument extends StatelessWidget {
-  final _DocumentSync document;
-
-  const _CarteDocument({required this.document});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFC7C5D6)),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0A4749CD),
-            blurRadius: 12,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // Miniature document
-          Container(
-            width: 64,
-            height: 64,
-            decoration: BoxDecoration(
-              color: const Color(0xFFC0C1FF),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(
-              Icons.description_outlined,
-              size: 28,
-              color: Color(0xFF5780FA),
-            ),
-          ),
-
-          const SizedBox(width: 16),
-
-          // Infos
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Titre + badge
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        document.typeDocument,
-                        style: ThemeApplication.corpsMedium.copyWith(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF1A1C1E),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    _BadgeStatut(
-                      libelle: document.libelle,
-                      couleurFond: document.couleurFond,
-                      couleurTexte: document.couleurTexte,
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 6),
-
-                // Date
-                Row(
-                  children: [
-                    Icon(
-                      Icons.access_time_rounded,
-                      size: 12,
-                      color: ThemeApplication.couleurTexteSecondaire,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      document.date,
-                      style: ThemeApplication.legende.copyWith(
-                        color: const Color(0xFF464554),
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 4),
-
-                // Lieu
-                Row(
-                  children: [
-                    Icon(
-                      Icons.location_on_outlined,
-                      size: 12,
-                      color: ThemeApplication.couleurTexteSecondaire,
-                    ),
-                    const SizedBox(width: 4),
-                    Expanded(
-                      child: Text(
-                        document.lieu,
-                        style: ThemeApplication.legende.copyWith(
-                          color: const Color(0xFF464554),
-                          fontWeight: FontWeight.w500,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ─────────────────────────────────────────────────────────────────
 // CARTE SYNCHRONISATION (progression + bouton)
 // ─────────────────────────────────────────────────────────────────
 
 class _CarteSync extends StatelessWidget {
   final bool syncEnCours;
   final double progression;
+  final int nbDocuments;
+  final bool estEnLigne;
   final VoidCallback? onSyncTap;
 
   const _CarteSync({
     required this.syncEnCours,
     required this.progression,
+    required this.nbDocuments,
+    required this.estEnLigne,
     required this.onSyncTap,
   });
 
   @override
   Widget build(BuildContext context) {
+    final bool desactive = onSyncTap == null;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -555,7 +353,7 @@ class _CarteSync extends StatelessWidget {
                 children: [
                   // Icône animée si en cours
                   syncEnCours
-                      ? SizedBox(
+                      ? const SizedBox(
                           width: 16,
                           height: 16,
                           child: CircularProgressIndicator(
@@ -568,15 +366,19 @@ class _CarteSync extends StatelessWidget {
                       : Icon(
                           Icons.sync_rounded,
                           size: 16,
-                          color: ThemeApplication.couleurPrimaire,
+                          color: desactive ? Colors.grey : ThemeApplication.couleurPrimaire,
                         ),
                   const SizedBox(width: 8),
                   Text(
                     syncEnCours
                         ? 'Synchronisation en cours...'
-                        : 'Prêt à synchroniser',
+                        : !estEnLigne
+                            ? 'Hors-ligne - Synchronisation impossible'
+                            : nbDocuments == 0
+                                ? 'Tous les documents sont synchronisés'
+                                : 'Prêt à synchroniser',
                     style: ThemeApplication.corpsMedium.copyWith(
-                      color: ThemeApplication.couleurPrimaire,
+                      color: desactive && !syncEnCours ? Colors.grey : ThemeApplication.couleurPrimaire,
                       fontWeight: FontWeight.w600,
                       fontSize: 14,
                     ),
@@ -626,11 +428,11 @@ class _CarteSync extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 16),
               decoration: BoxDecoration(
-                color: syncEnCours
-                    ? ThemeApplication.couleurPrimaire.withOpacity(0.6)
+                color: desactive
+                    ? Colors.grey.withOpacity(0.5)
                     : ThemeApplication.couleurPrimaire,
                 borderRadius: BorderRadius.circular(9999),
-                boxShadow: syncEnCours
+                boxShadow: desactive
                     ? []
                     : const [
                         BoxShadow(
@@ -671,7 +473,7 @@ class _CarteSync extends StatelessWidget {
                 ),
                 const SizedBox(width: 5),
                 Text(
-                  'Dernière sync : Aujourd\'hui, 08:14',
+                  'Dernière sync : Aujourd\'hui, à l\'instant',
                   style: ThemeApplication.legende.copyWith(
                     color: ThemeApplication.couleurTexteSecondaire,
                   ),
@@ -683,41 +485,4 @@ class _CarteSync extends StatelessWidget {
       ),
     );
   }
-}
-
-// ─────────────────────────────────────────────────────────────────
-// BADGE STATUT
-// ─────────────────────────────────────────────────────────────────
-
-class _BadgeStatut extends StatelessWidget {
-  final String libelle;
-  final Color couleurFond;
-  final Color couleurTexte;
-
-  const _BadgeStatut({
-    required this.libelle,
-    required this.couleurFond,
-    required this.couleurTexte,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: couleurFond,
-        borderRadius: BorderRadius.circular(9999),
-      ),
-      child: Text(
-        libelle,
-        style: TextStyle(
-          color: couleurTexte,
-          fontSize: 10,
-          fontFamily: 'Montserrat',
-          fontWeight: FontWeight.w700,
-          letterSpacing: 0.5,
-        ),
-      ),
-    );
-  }
-}
+}

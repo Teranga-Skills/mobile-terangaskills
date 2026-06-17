@@ -47,9 +47,9 @@ class WidgetBarreNavigation extends StatelessWidget {
       label: 'Sync',
     ),
     _ItemNavData(
-      icone: Icons.settings_outlined,
-      iconeActif: Icons.settings_rounded,
-      label: 'Réglages',
+      icone: Icons.person_outline,
+      iconeActif: Icons.person_rounded,
+      label: 'Profil',
     ),
   ];
 
@@ -128,6 +128,9 @@ class WidgetBarreNavigation extends StatelessWidget {
             break;
           case 3:
             Navigator.pushReplacementNamed(context, Routes.synchronisation);
+            break;
+          case 4:
+            Navigator.pushReplacementNamed(context, Routes.profilAgent);
             break;
           default:
             onTap(itemIndex);
