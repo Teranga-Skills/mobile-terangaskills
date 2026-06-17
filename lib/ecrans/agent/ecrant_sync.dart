@@ -176,30 +176,36 @@ class _EnteteSync extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                'Synchronisation',
-                style: ThemeApplication.titrePrincipal.copyWith(
-                  fontSize: 22,
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: -0.3,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Synchronisation',
+                  style: ThemeApplication.titrePrincipal.copyWith(
+                    fontSize: 22,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.3,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                '$nbEnAttente document${nbEnAttente > 1 ? 's' : ''} en attente',
-                style: ThemeApplication.legende.copyWith(
-                  color: Colors.white.withOpacity(0.75),
-                  fontWeight: FontWeight.w500,
+                const SizedBox(height: 4),
+                Text(
+                  '$nbEnAttente document${nbEnAttente > 1 ? 's' : ''} en attente',
+                  style: ThemeApplication.legende.copyWith(
+                    color: Colors.white.withOpacity(0.75),
+                    fontWeight: FontWeight.w500,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-
+          const SizedBox(width: 12),
           // Badge compteur
           Container(
             width: 48,
@@ -349,42 +355,49 @@ class _CarteSync extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Row(
-                children: [
-                  // Icône animée si en cours
-                  syncEnCours
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation(
-                              ThemeApplication.couleurPrimaire,
-                            ),
-                          ),
-                        )
-                      : Icon(
-                          Icons.sync_rounded,
-                          size: 16,
-                          color: desactive ? Colors.grey : ThemeApplication.couleurPrimaire,
-                        ),
-                  const SizedBox(width: 8),
-                  Text(
+              Expanded(
+                child: Row(
+                  children: [
+                    // Icône animée si en cours
                     syncEnCours
-                        ? 'Synchronisation en cours...'
-                        : !estEnLigne
-                            ? 'Hors-ligne - Synchronisation impossible'
-                            : nbDocuments == 0
-                                ? 'Tous les documents sont synchronisés'
-                                : 'Prêt à synchroniser',
-                    style: ThemeApplication.corpsMedium.copyWith(
-                      color: desactive && !syncEnCours ? Colors.grey : ThemeApplication.couleurPrimaire,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation(
+                                ThemeApplication.couleurPrimaire,
+                              ),
+                            ),
+                          )
+                        : Icon(
+                            Icons.sync_rounded,
+                            size: 16,
+                            color: desactive ? Colors.grey : ThemeApplication.couleurPrimaire,
+                          ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        syncEnCours
+                            ? 'Synchronisation en cours...'
+                            : !estEnLigne
+                                ? 'Hors-ligne - Synchronisation impossible'
+                                : nbDocuments == 0
+                                    ? 'Tous les documents sont synchronisés'
+                                    : 'Prêt à synchroniser',
+                        style: ThemeApplication.corpsMedium.copyWith(
+                          color: desactive && !syncEnCours ? Colors.grey : ThemeApplication.couleurPrimaire,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+              const SizedBox(width: 8),
               if (syncEnCours)
                 Text(
                   '${(progression * 100).toInt()}%',
