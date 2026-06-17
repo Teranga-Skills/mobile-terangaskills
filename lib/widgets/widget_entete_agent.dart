@@ -3,8 +3,10 @@
 // ─────────────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:teranga_skills/configuration/theme.dart';
 import 'package:teranga_skills/ecrans/agent/ecran_profil.dart';
+import 'package:teranga_skills/providers/provider_authentification.dart';
 
 class EnteteAgent extends StatelessWidget {
   const EnteteAgent({super.key});
@@ -12,6 +14,10 @@ class EnteteAgent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final topPadding = MediaQuery.of(context).padding.top;
+    final authProvider = Provider.of<ProviderAuthentification>(context);
+    final user = authProvider.utilisateurCourant;
+    final prenom = user != null ? user.nom.split(' ').first : 'Agent';
+    final zone = user != null ? user.zone : 'Zone inconnue';
 
     return Container(
       color: ThemeApplication.couleurPrimaire,
@@ -41,18 +47,18 @@ class EnteteAgent extends StatelessWidget {
                 child: GestureDetector(
                   onTap: () {
                     Navigator.push(
-                  context,
-                  PageRouteBuilder(
-                    transitionDuration: const Duration(milliseconds: 250),
-                    pageBuilder: (_, animation, _) => const EcranProfil(),
-                    transitionsBuilder: (_, animation, _, child) {
-                      return FadeTransition(
-                        opacity: animation,
-                        child: child,
-                      );
-                    },
-                  ),
-                );
+                      context,
+                      PageRouteBuilder(
+                        transitionDuration: const Duration(milliseconds: 250),
+                        pageBuilder: (_, animation, _) => const EcranProfil(),
+                        transitionsBuilder: (_, animation, _, child) {
+                          return FadeTransition(
+                            opacity: animation,
+                            child: child,
+                          );
+                        },
+                      ),
+                    );
                   },
                   child: ClipOval(
                     child: Image.network(
@@ -78,7 +84,7 @@ class EnteteAgent extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'Bonjour, Moussa',
+                    'Bonjour, $prenom',
                     style: ThemeApplication.titrePrincipal.copyWith(
                       fontSize: 20,
                       fontWeight: FontWeight.w700,
@@ -97,7 +103,7 @@ class EnteteAgent extends StatelessWidget {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        'Dakar-Plateau',
+                        zone,
                         style: ThemeApplication.legende.copyWith(
                           color: const Color(0xCCD0D0FF),
                           fontWeight: FontWeight.w500,
@@ -110,89 +116,80 @@ class EnteteAgent extends StatelessWidget {
             ],
           ),
           GestureDetector(
-  onTap: () {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (context) {
-        return Container(
-          height: MediaQuery.of(context).size.height * 0.6,
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(
-              top: Radius.circular(24),
+            onTap: () {
+              showModalBottomSheet(
+                context: context,
+                backgroundColor: Colors.transparent,
+                isScrollControlled: true,
+                builder: (context) {
+                  return Container(
+                    height: MediaQuery.of(context).size.height * 0.6,
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(24),
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 16),
+                        // petite barre
+                        Container(
+                          width: 40,
+                          height: 5,
+                          decoration: BoxDecoration(
+                            color: ThemeApplication.couleurPrimaire,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        Text(
+                          "Notifications",
+                          style: ThemeApplication.titrePrincipal.copyWith(
+                            fontSize: 20,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        const ListTile(
+                          leading: Icon(Icons.notifications),
+                          title: Text("Nouvelle activité"),
+                          subtitle: Text("Un scan a été synchronisé"),
+                        ),
+                        const ListTile(
+                          leading: Icon(Icons.notifications),
+                          title: Text("Mise à jour"),
+                          subtitle: Text("Ton profil a été mis à jour"),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              );
+            },
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                const Icon(
+                  Icons.notifications_outlined,
+                  color: Colors.white,
+                  size: 22,
+                ),
+                Positioned(
+                  right: -2,
+                  top: -2,
+                  child: Container(
+                    width: 8,
+                    height: 8,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFFF4757),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-          child: Column(
-            children: [
-
-              const SizedBox(height: 16),
-
-              // petite barre
-              Container(
-                width: 40,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: ThemeApplication.couleurPrimaire,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              Text(
-                "Notifications",
-                style: ThemeApplication.titrePrincipal.copyWith(
-                  fontSize: 20,
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              const ListTile(
-                leading: Icon(Icons.notifications),
-                title: Text("Nouvelle activité"),
-                subtitle: Text("Un scan  a été synchronisé"),
-              ),
-
-              const ListTile(
-                leading: Icon(Icons.notifications),
-                title: Text("Mise à jour"),
-                subtitle: Text("Ton profil a été mis à jour"),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  },
-  child: Stack(
-  clipBehavior: Clip.none,
-  children: [
-    const Icon(
-      Icons.notifications_outlined,
-      color: Colors.white,
-      size: 22,
-    ),
-
-    Positioned(
-      right: -2,
-      top: -2,
-      child: Container(
-        width: 8,
-        height: 8,
-        decoration: const BoxDecoration(
-          color: Color(0xFFFF4757),
-          shape: BoxShape.circle,
-        ),
-      ),
-    ),
-  ],
-)
-),
-          // Bouton notification
-         ],
+        ],
       ),
     );
   }

@@ -8,8 +8,8 @@ import 'package:teranga_skills/ecrans/agent/ecrant_sync.dart';
 import '../ecrans/splash/ecran_splash.dart';
 import '../ecrans/authentification/ecran_connexion.dart';
 import '../ecrans/agent/ecran_accueil_agent.dart';
-// import '../ecrans/agent/ecran_nouveau_signalement.dart';
-// import '../ecrans/agent/ecran_camera_document.dart';
+import '../ecrans/agent/ecran_nouveau_signalement.dart';
+import '../ecrans/agent/ecran_camera_document.dart';
 import '../ecrans/agent/ecran_mes_signalements.dart';
 import '../ecrans/ecran_onboarding.dart';
 
@@ -35,5 +35,7 @@ static const String synchronisation = '/agent/sync';
     '/profile': (_) => const EcranProfil(),
     mesSignalements: (_) => const EcranMesSignalements(),
     synchronisation: (_) => const EcranSynchronisation(),
+    nouveauSignalement: (_) => const EcranNouveauSignalement(),
+    cameraDocument: (_) => const EcranCameraDocument(),
   };
 }

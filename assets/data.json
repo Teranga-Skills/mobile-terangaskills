@@ -1,0 +1,105 @@
+{
+  "utilisateurs": [
+    {
+      "email": "agent@teranga.sn",
+      "motDePasse": "password123",
+      "nom": "Moussa Ali Mchangama",
+      "role": "Agent TerangaSkills",
+      "zone": "Dakar-Plateau",
+      "telephone": "+221 77 000 00 00",
+      "token": "mock-jwt-token-agent-terangaskills-2026"
+    },
+    {
+      "email": "moussa@email.com",
+      "motDePasse": "password123",
+      "nom": "Moussa Ali Mchangama",
+      "role": "Agent TerangaSkills",
+      "zone": "Dakar-Plateau",
+      "telephone": "+221 77 000 00 00",
+      "token": "mock-jwt-token-moussa"
+    }
+  ],
+  "signalements": [
+    {
+      "id": "001",
+      "nom": "Moussa Diop",
+      "typeDocument": "CIN",
+      "lieu": "Dakar",
+      "date": "Il y a 10 min",
+      "statut": "synchronise",
+      "numeroDocument": "SN-2024-001234",
+      "dateNaissance": "12/03/1985",
+      "nationalite": "Sénégalaise",
+      "noteAgent": "Document authentique, aucune anomalie détectée."
+    },
+    {
+      "id": "002",
+      "nom": "Fatou Ndiaye",
+      "typeDocument": "Passeport",
+      "lieu": "Thiès",
+      "date": "Il y a 45 min",
+      "statut": "enCours",
+      "numeroDocument": "SN-P-2023-005678",
+      "dateNaissance": "07/11/1992",
+      "nationalite": "Sénégalaise",
+      "noteAgent": "Vérification en cours, anomalie sur la photo."
+    },
+    {
+      "id": "003",
+      "nom": "Amadou Fall",
+      "typeDocument": "Permis de conduire",
+      "lieu": "Saint-Louis",
+      "date": "Hier, 18:24",
+      "statut": "horsLigne",
+      "numeroDocument": "PC-2022-009012",
+      "dateNaissance": "23/06/1978",
+      "nationalite": "Sénégalaise",
+      "noteAgent": "En attente de synchronisation réseau."
+    },
+    {
+      "id": "004",
+      "nom": "Khady Seck",
+      "typeDocument": "CIN",
+      "lieu": "Kaolack",
+      "date": "Hier, 15:10",
+      "statut": "synchronise",
+      "numeroDocument": "SN-2023-007890",
+      "dateNaissance": "15/09/1990",
+      "nationalite": "Sénégalaise",
+      "noteAgent": "Document valide."
+    },
+    {
+      "id": "005",
+      "nom": "Ibrahima Bâ",
+      "typeDocument": "Titre de séjour",
+      "lieu": "Ziguinchor",
+      "date": "20/06/2025",
+      "statut": "erreur",
+      "numeroDocument": "TS-2024-003456",
+      "dateNaissance": "01/01/1980",
+      "nationalite": "Guinéenne",
+      "noteAgent": "Incohérence détectée entre les données et le document."
+    },
+    {
+      "id": "006",
+      "nom": "Aissatou Diallo",
+      "typeDocument": "Passeport",
+      "lieu": "Dakar",
+      "date": "19/06/2025",
+      "statut": "synchronise",
+      "numeroDocument": "GN-P-2022-001122",
+      "dateNaissance": "30/04/1995",
+      "nationalite": "Guinéenne",
+      "noteAgent": "Contrôle terminé, document conforme."
+    }
+  ],
+  "ocr_simulation": {
+    "nom": "Ousmane Sonko",
+    "typeDocument": "CIN",
+    "numeroDocument": "SN-1974-008273",
+    "dateNaissance": "15/07/1974",
+    "nationalite": "Sénégalaise",
+    "lieu": "Ziguinchor",
+    "noteAgent": "Extrait automatique par IA GPT-4o."
+  }
+}

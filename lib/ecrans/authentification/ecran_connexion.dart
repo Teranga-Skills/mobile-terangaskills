@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../configuration/routes.dart';
 import '../../configuration/theme.dart';
+import '../../providers/provider_authentification.dart';
 import '../../widgets/widget_champ_texte.dart';
 
 class PageConnexion extends StatefulWidget {
@@ -15,7 +17,6 @@ class _PageConnexionState extends State<PageConnexion> {
   final _emailController = TextEditingController();
   final _motDePasseController = TextEditingController();
   bool _sesouvenir = false;
-  bool _chargement = false;
 
   @override
   void dispose() {
@@ -27,32 +28,47 @@ class _PageConnexionState extends State<PageConnexion> {
   Future<void> _seConnecter() async {
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() => _chargement = true);
-    await Future.delayed(const Duration(seconds: 2)); // TODO : appel API
-    setState(() => _chargement = false);
+    final authProvider = Provider.of<ProviderAuthentification>(context, listen: false);
+    final succes = await authProvider.seConnecter(
+      _emailController.text.trim(),
+      _motDePasseController.text,
+    );
 
     if (!mounted) return;
 
-    // ── Utilise la constante de Routes ─────────────────────────
-    Navigator.pushReplacementNamed(context, Routes.accueilAgent);
+    if (succes) {
+      Navigator.pushReplacementNamed(context, Routes.accueilAgent);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            authProvider.erreur ?? 'Erreur de connexion',
+            style: const TextStyle(fontFamily: 'Montserrat'),
+          ),
+          backgroundColor: ThemeApplication.couleurDanger,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<ProviderAuthentification>(context);
+
     return Scaffold(
-      // ── Fond sombre du thème ────────────────────────────────
       backgroundColor: ThemeApplication.couleurFondSombre,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Container(
-            // ── Pas d'arrondi — fond blanc plein écran ─────────
             width: double.infinity,
             constraints: BoxConstraints(
-              minHeight: MediaQuery.of(context).size.height,
+              minHeight: MediaQuery.of(context).size.height - MediaQuery.of(context).padding.top - MediaQuery.of(context).padding.bottom,
             ),
             color: ThemeApplication.couleurFond,
             padding: const EdgeInsets.only(
-              top: 180,
+              top: 100,
               left: 30,
               right: 30,
               bottom: 56,
@@ -63,7 +79,6 @@ class _PageConnexionState extends State<PageConnexion> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-
                   // ── TITRE ─────────────────────────────────────
                   Column(
                     children: [
@@ -88,7 +103,7 @@ class _PageConnexionState extends State<PageConnexion> {
                     ],
                   ),
 
-                  const SizedBox(height: 135),
+                  const SizedBox(height: 80),
 
                   // ── CHAMPS ────────────────────────────────────
                   Column(
@@ -174,13 +189,13 @@ class _PageConnexionState extends State<PageConnexion> {
                     ],
                   ),
 
-                  const SizedBox(height: 135),
+                  const SizedBox(height: 100),
 
                   // ── BOUTON + VERSION ──────────────────────────
                   Column(
                     children: [
                       GestureDetector(
-                        onTap: _chargement ? null : _seConnecter,
+                        onTap: authProvider.chargement ? null : _seConnecter,
                         child: Container(
                           width: 300,
                           height: 50,
@@ -190,7 +205,7 @@ class _PageConnexionState extends State<PageConnexion> {
                               borderRadius: BorderRadius.circular(10),
                             ),
                           ),
-                          child: _chargement
+                          child: authProvider.chargement
                               ? const Center(
                                   child: SizedBox(
                                     width: 22,
@@ -229,7 +244,7 @@ class _PageConnexionState extends State<PageConnexion> {
                           fontSize: 13,
                           fontWeight: FontWeight.w300,
                           color: ThemeApplication.couleurTexte
-                              .withValues(alpha: 0.5),
+                              .withOpacity(0.5),
                         ),
                       ),
                     ],

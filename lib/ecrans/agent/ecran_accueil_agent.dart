@@ -4,11 +4,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import '../../configuration/theme.dart';
 import '../../widgets/widget_barre_navigation.dart';
-import '../../widgets/widget_carte_activite.dart';
+import '../../widgets/widget_carte_signalement.dart';
 import '../../widgets/widget_entete_agent.dart';
 import '../../configuration/routes.dart';
+import '../../providers/provider_signalements.dart';
+import 'ecran_mes_signalements.dart';
 
 class EcranAccueilAgent extends StatefulWidget {
   const EcranAccueilAgent({super.key});
@@ -39,7 +42,7 @@ class _EcranAccueilAgentState extends State<EcranAccueilAgent> {
         slivers: [
 
           // ── SliverAppBar : header qui se réduit ───────────────
-          SliverAppBar(
+          const SliverAppBar(
             expandedHeight: _hauteurHeaderExpanded,
             collapsedHeight: _hauteurHeaderCollapsed,
             pinned: true,
@@ -65,7 +68,7 @@ class _EcranAccueilAgentState extends State<EcranAccueilAgent> {
                 const _ActionsRapides(),
                 const SizedBox(height: 28),
 
-                // ── Section activités avec WidgetCarteActivite ───
+                // ── Section activités récentes ───────────────────
                 _SectionActivites(),
               ]),
             ),
@@ -78,7 +81,7 @@ class _EcranAccueilAgentState extends State<EcranAccueilAgent> {
         indexCourant: _indexNav,
         onTap: (i) => setState(() => _indexNav = i),
         onScanTap: () {
-          // TODO : Navigator.pushNamed(context, Routes.cameraDocument)
+          Navigator.pushNamed(context, Routes.cameraDocument);
         },
       ),
     );
@@ -147,7 +150,7 @@ class _CarteScanState extends State<_CarteScan>
                 color: ThemeApplication.couleurPrimaire.withOpacity(0.08),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.document_scanner_outlined,
                 size: 42,
                 color: ThemeApplication.couleurPrimaire,
@@ -183,7 +186,7 @@ class _CarteScanState extends State<_CarteScan>
 
           GestureDetector(
             onTap: () {
-              // TODO : Navigator.pushNamed(context, Routes.cameraDocument)
+              Navigator.pushNamed(context, Routes.cameraDocument);
             },
             child: Container(
               width: double.infinity,
@@ -223,6 +226,9 @@ class _ActionsRapides extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final provider = Provider.of<ProviderSignalements>(context);
+    final nbHorsLigne = provider.fileAttenteHorsLigne.length;
+
     return Row(
       children: [
         Expanded(
@@ -230,7 +236,9 @@ class _ActionsRapides extends StatelessWidget {
             icone: Icons.list_alt_outlined,
             couleurFondIcone: const Color(0x1400677E),
             label: 'Mes signalements',
-            onTap: () {},
+            onTap: () {
+              Navigator.pushNamed(context, Routes.mesSignalements);
+            },
           ),
         ),
         const SizedBox(width: 12),
@@ -239,8 +247,10 @@ class _ActionsRapides extends StatelessWidget {
             icone: Icons.sync_rounded,
             couleurFondIcone: const Color(0x14742F00),
             label: 'Sync',
-            badge: '2',
-            onTap: () {},
+            badge: nbHorsLigne > 0 ? nbHorsLigne.toString() : null,
+            onTap: () {
+              Navigator.pushNamed(context, Routes.synchronisation);
+            },
           ),
         ),
       ],
@@ -302,7 +312,7 @@ class _CarteAction extends StatelessWidget {
                       child: Icon(
                         icone,
                         size: 22,
-                        color: ThemeApplication.couleurTexte,
+                        color: ThemeApplication.couleurPrimaire,
                       ),
                     ),
                     const SizedBox(height: 10),
@@ -353,43 +363,16 @@ class _CarteAction extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────
-// SECTION ACTIVITÉS — utilise WidgetCarteActivite
+// SECTION ACTIVITÉS — utilise WidgetCarteSignalement
 // ─────────────────────────────────────────────────────────────────
 class _SectionActivites extends StatelessWidget {
-
-  static const _activites = [
-    DonneesActivite(
-      nom: 'Moussa Diop',
-      info: 'Il y a 10 min • Dakar',
-      statut: 'SYNCHRONISÉ',
-      couleurFond: Color(0xFFDCFCE7),
-      couleurTexte: Color(0xFF15803D),
-    ),
-    DonneesActivite(
-      nom: 'Fatou Ndiaye',
-      info: 'Il y a 45 min • Thiès',
-      statut: 'EN COURS',
-      couleurFond: Color(0xFFDBEAFE),
-      couleurTexte: Color(0xFF1D4ED8),
-    ),
-    DonneesActivite(
-      nom: 'Amadou Fall',
-      info: 'Hier, 18:24 • Saint-Louis',
-      statut: 'HORS-LIGNE',
-      couleurFond: Color(0xFFEEEEF0),
-      couleurTexte: Color(0xFF464554),
-    ),
-    DonneesActivite(
-      nom: 'Khady Seck',
-      info: 'Hier, 15:10 • Kaolack',
-      statut: 'SYNCHRONISÉ',
-      couleurFond: Color(0xFFDCFCE7),
-      couleurTexte: Color(0xFF15803D),
-    ),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final provider = Provider.of<ProviderSignalements>(context);
+    
+    // Combiner les signalements récents (max 4)
+    final activites = provider.signalements.take(4).toList();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -420,15 +403,44 @@ class _SectionActivites extends StatelessWidget {
 
         const SizedBox(height: 16),
 
-        // ── Liste avec WidgetCarteActivite ───────────────────────
-        ...List.generate(
-          _activites.length,
-          (i) => Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: WidgetCarteActivite(donnees: _activites[i]),
+        // ── Liste avec WidgetCarteSignalement ────────────────────
+        if (provider.chargement && activites.isEmpty)
+          const Center(
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 20),
+              child: CircularProgressIndicator(),
+            ),
+          )
+        else if (activites.isEmpty)
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 24),
+              child: Text(
+                'Aucune activité récente',
+                style: ThemeApplication.corpsMedium,
+              ),
+            ),
+          )
+        else
+          ...List.generate(
+            activites.length,
+            (i) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: WidgetCarteSignalement(
+                signalement: activites[i],
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => EcranDetailSignalement(signalement: activites[i]),
+                    ),
+                  );
+                },
+              ),
+            ),
           ),
-        ),
       ],
     );
   }
 }
+

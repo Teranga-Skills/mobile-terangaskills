@@ -4,8 +4,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import '../../configuration/theme.dart';
 import '../../models/modele_signalement.dart';
+import '../../providers/provider_signalements.dart';
 import '../../widgets/widget_carte_signalement.dart';
 import '../../widgets/widget_barre_navigation.dart';
 
@@ -22,84 +24,8 @@ class _EcranMesSignalementsState extends State<EcranMesSignalements> {
   String _recherche = '';
   int _indexNav = 1;
 
-  // ── Données fictives — à remplacer par un appel API ─────────────
-  static const _tousSignalements = [
-    ModeleSignalement(
-      id: '001',
-      nom: 'Moussa Diop',
-      typeDocument: 'CIN',
-      lieu: 'Dakar',
-      date: 'Il y a 10 min',
-      statut: StatutSignalement.synchronise,
-      numeroDocument: 'SN-2024-001234',
-      dateNaissance: '12/03/1985',
-      nationalite: 'Sénégalaise',
-      noteAgent: 'Document authentique, aucune anomalie détectée.',
-    ),
-    ModeleSignalement(
-      id: '002',
-      nom: 'Fatou Ndiaye',
-      typeDocument: 'Passeport',
-      lieu: 'Thiès',
-      date: 'Il y a 45 min',
-      statut: StatutSignalement.enCours,
-      numeroDocument: 'SN-P-2023-005678',
-      dateNaissance: '07/11/1992',
-      nationalite: 'Sénégalaise',
-      noteAgent: 'Vérification en cours, anomalie sur la photo.',
-    ),
-    ModeleSignalement(
-      id: '003',
-      nom: 'Amadou Fall',
-      typeDocument: 'Permis de conduire',
-      lieu: 'Saint-Louis',
-      date: 'Hier, 18:24',
-      statut: StatutSignalement.horsLigne,
-      numeroDocument: 'PC-2022-009012',
-      dateNaissance: '23/06/1978',
-      nationalite: 'Sénégalaise',
-      noteAgent: 'En attente de synchronisation réseau.',
-    ),
-    ModeleSignalement(
-      id: '004',
-      nom: 'Khady Seck',
-      typeDocument: 'CIN',
-      lieu: 'Kaolack',
-      date: 'Hier, 15:10',
-      statut: StatutSignalement.synchronise,
-      numeroDocument: 'SN-2023-007890',
-      dateNaissance: '15/09/1990',
-      nationalite: 'Sénégalaise',
-      noteAgent: 'Document valide.',
-    ),
-    ModeleSignalement(
-      id: '005',
-      nom: 'Ibrahima Bâ',
-      typeDocument: 'Titre de séjour',
-      lieu: 'Ziguinchor',
-      date: '20/06/2025',
-      statut: StatutSignalement.erreur,
-      numeroDocument: 'TS-2024-003456',
-      dateNaissance: '01/01/1980',
-      nationalite: 'Guinéenne',
-      noteAgent: 'Incohérence détectée entre les données et le document.',
-    ),
-    ModeleSignalement(
-      id: '006',
-      nom: 'Aissatou Diallo',
-      typeDocument: 'Passeport',
-      lieu: 'Dakar',
-      date: '19/06/2025',
-      statut: StatutSignalement.synchronise,
-      numeroDocument: 'GN-P-2022-001122',
-      dateNaissance: '30/04/1995',
-      nationalite: 'Guinéenne',
-      noteAgent: 'Contrôle terminé, document conforme.',
-    ),
-  ];
-
-  List<ModeleSignalement> get _signalementsFiltres {
-    return _tousSignalements.where((s) {
+  List<ModeleSignalement> _filtrerSignalements(List<ModeleSignalement> liste) {
+    return liste.where((s) {
       final matchRecherche = _recherche.isEmpty ||
           s.nom.toLowerCase().contains(_recherche.toLowerCase()) ||
           s.lieu.toLowerCase().contains(_recherche.toLowerCase()) ||
@@ -134,7 +60,8 @@ class _EcranMesSignalementsState extends State<EcranMesSignalements> {
       statusBarIconBrightness: Brightness.light,
     ));
 
-    final resultats = _signalementsFiltres;
+    final provider = Provider.of<ProviderSignalements>(context);
+    final resultats = _filtrerSignalements(provider.signalements);
 
     return Scaffold(
       backgroundColor: ThemeApplication.couleurFond,
@@ -197,7 +124,7 @@ class _EcranMesSignalementsState extends State<EcranMesSignalements> {
                     Padding(
                       padding: const EdgeInsets.only(left: 48),
                       child: Text(
-                        '${_tousSignalements.length} signalements au total',
+                        '${provider.signalements.length} signalements au total',
                         style: ThemeApplication.legende.copyWith(
                           color: Colors.white.withOpacity(0.75),
                         ),
@@ -657,8 +584,12 @@ class EcranDetailSignalement extends StatelessWidget {
                 if (signalement.statut == StatutSignalement.horsLigne ||
                     signalement.statut == StatutSignalement.erreur)
                   GestureDetector(
-                    onTap: () {
-                      // TODO : resynchroniser
+                    onTap: () async {
+                      final provider = Provider.of<ProviderSignalements>(context, listen: false);
+                      await provider.synchroniserFileAttente();
+                      if (context.mounted) {
+                        Navigator.pop(context);
+                      }
                     },
                     child: Container(
                       width: double.infinity,
