@@ -369,16 +369,34 @@ class ServiceApi {
         try {
           final resJson = json.decode(utf8.decode(response.bodyBytes));
           if (resJson is Map<String, dynamic>) {
+            Map<String, dynamic>? rawExtracted;
+            
             // Si le backend renvoie le format avec extracted_data imbriqué
             if (resJson.containsKey('extracted_data')) {
-              final extracted = resJson['extracted_data'];
-              if (extracted is Map<String, dynamic> && extracted.containsKey('nom')) {
-                return Map<String, dynamic>.from(extracted);
+              final ext = resJson['extracted_data'];
+              if (ext is Map<String, dynamic>) {
+                rawExtracted = ext;
               }
+            } else if (resJson.containsKey('nom') || resJson.containsKey('numero_identification') || resJson.containsKey('numeroDocument')) {
+              // Sinon format plat direct
+              rawExtracted = resJson;
             }
-            // Sinon format plat direct
-            if (resJson.containsKey('nom')) {
-              return resJson;
+
+            if (rawExtracted != null) {
+              // Adapter le format du backend vers le format attendu par le mobile (camelCase + nom complet)
+              final String prenom = rawExtracted['prenom'] ?? '';
+              final String nom = rawExtracted['nom'] ?? '';
+              final String nomComplet = '$prenom $nom'.trim();
+              
+              return {
+                'nom': nomComplet.isNotEmpty ? nomComplet : (rawExtracted['nom'] ?? ''),
+                'numeroDocument': rawExtracted['numero_identification'] ?? rawExtracted['numeroDocument'] ?? '',
+                'dateNaissance': rawExtracted['date_naissance'] ?? rawExtracted['dateNaissance'] ?? '',
+                'typeDocument': rawExtracted['typeDocument'] ?? 'CIN',
+                'nationalite': rawExtracted['nationalite'] ?? 'Sénégalaise',
+                'lieu': rawExtracted['lieu'] ?? '',
+                'noteAgent': rawExtracted['noteAgent'] ?? 'Extrait automatiquement via OCR.',
+              };
             }
           }
         } catch (_) {}
