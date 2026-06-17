@@ -42,7 +42,7 @@ class _EcranAccueilAgentState extends State<EcranAccueilAgent> {
         slivers: [
 
           // ── SliverAppBar : header qui se réduit ───────────────
-          const SliverAppBar(
+          SliverAppBar(
             expandedHeight: _hauteurHeaderExpanded,
             collapsedHeight: _hauteurHeaderCollapsed,
             pinned: true,
@@ -50,9 +50,20 @@ class _EcranAccueilAgentState extends State<EcranAccueilAgent> {
             backgroundColor: ThemeApplication.couleurPrimaire,
             elevation: 0,
             automaticallyImplyLeading: false,
-            flexibleSpace: FlexibleSpaceBar(
-              collapseMode: CollapseMode.parallax,
-              background: EnteteAgent(),
+            flexibleSpace: LayoutBuilder(
+              builder: (context, constraints) {
+                final topPadding = MediaQuery.of(context).padding.top;
+                final currentHeight = constraints.biggest.height;
+                final maxHeight = _hauteurHeaderExpanded + topPadding;
+                final minHeight = _hauteurHeaderCollapsed + topPadding;
+                
+                double t = 0.0;
+                if (maxHeight != minHeight) {
+                  t = ((maxHeight - currentHeight) / (maxHeight - minHeight)).clamp(0.0, 1.0);
+                }
+                
+                return EnteteAgent(t: t);
+              },
             ),
           ),
 

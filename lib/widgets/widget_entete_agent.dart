@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────────
-// ENTÊTE EXPANDED
+// ENTÊTE EXPANDED DYNAMIQUE (Collapsible)
 // ─────────────────────────────────────────────────────────────────
 
 import 'package:flutter/material.dart';
@@ -9,7 +9,8 @@ import 'package:teranga_skills/ecrans/agent/ecran_profil.dart';
 import 'package:teranga_skills/providers/provider_authentification.dart';
 
 class EnteteAgent extends StatelessWidget {
-  const EnteteAgent({super.key});
+  final double t; // De 0.0 (complètement étendu) à 1.0 (complètement réduit)
+  const EnteteAgent({super.key, required this.t});
 
   @override
   Widget build(BuildContext context) {
@@ -19,101 +20,125 @@ class EnteteAgent extends StatelessWidget {
     final prenom = user != null ? user.nom.split(' ').first : 'Agent';
     final zone = user != null ? user.zone : 'Zone inconnue';
 
+    // Interpolation des styles
+    final pt = (topPadding + 16) - (6 * t);
+    final pb = 20.0 - (10.0 * t);
+    final avatarSize = 52.0 - (16.0 * t);
+    final borderWidth = 2.0 - (0.5 * t);
+    final fontSize = 20.0 - (4.0 * t);
+    final iconSize = 22.0 - (4.0 * t);
+
     return Container(
       color: ThemeApplication.couleurPrimaire,
       padding: EdgeInsets.only(
-        top: topPadding + 16,
+        top: pt,
         left: 20,
         right: 20,
-        bottom: 20,
+        bottom: pb,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           // Avatar + nom + zone
-          Row(
-            children: [
-              // Avatar
-              Container(
-                width: 52,
-                height: 52,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.4),
-                    width: 2,
+          Expanded(
+            child: Row(
+              children: [
+                // Avatar
+                Container(
+                  width: avatarSize,
+                  height: avatarSize,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.4),
+                      width: borderWidth,
+                    ),
                   ),
-                ),
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      PageRouteBuilder(
-                        transitionDuration: const Duration(milliseconds: 250),
-                        pageBuilder: (_, animation, _) => const EcranProfil(),
-                        transitionsBuilder: (_, animation, _, child) {
-                          return FadeTransition(
-                            opacity: animation,
-                            child: child,
-                          );
-                        },
-                      ),
-                    );
-                  },
-                  child: ClipOval(
-                    child: Image.network(
-                      'https://i.pravatar.cc/52',
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                        color: const Color(0xFF4060D0),
-                        child: const Icon(
-                          Icons.person,
-                          color: Colors.white,
-                          size: 28,
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        PageRouteBuilder(
+                          transitionDuration: const Duration(milliseconds: 250),
+                          pageBuilder: (_, animation, _) => const EcranProfil(),
+                          transitionsBuilder: (_, animation, _, child) {
+                            return FadeTransition(
+                              opacity: animation,
+                              child: child,
+                            );
+                          },
+                        ),
+                      );
+                    },
+                    child: ClipOval(
+                      child: Image.network(
+                        'https://i.pravatar.cc/100',
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Container(
+                          color: const Color(0xFF4060D0),
+                          child: Icon(
+                            Icons.person,
+                            color: Colors.white,
+                            size: avatarSize * 0.6,
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
 
-              const SizedBox(width: 12),
+                const SizedBox(width: 12),
 
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Bonjour, $prenom',
-                    style: ThemeApplication.titrePrincipal.copyWith(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                      letterSpacing: -0.3,
-                      height: 1.2,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(
-                        Icons.location_on_outlined,
-                        size: 12,
-                        color: Color(0xCCD0D0FF),
-                      ),
-                      const SizedBox(width: 4),
                       Text(
-                        zone,
-                        style: ThemeApplication.legende.copyWith(
-                          color: const Color(0xCCD0D0FF),
-                          fontWeight: FontWeight.w500,
+                        'Bonjour, $prenom',
+                        style: ThemeApplication.titrePrincipal.copyWith(
+                          fontSize: fontSize,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                          letterSpacing: -0.3,
+                          height: 1.2,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
+                      if (t < 0.8) ...[
+                        const SizedBox(height: 4),
+                        Opacity(
+                          opacity: (1.0 - t / 0.8).clamp(0.0, 1.0),
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.location_on_outlined,
+                                size: 12,
+                                color: Color(0xCCD0D0FF),
+                              ),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: Text(
+                                  zone,
+                                  style: ThemeApplication.legende.copyWith(
+                                    color: const Color(0xCCD0D0FF),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ],
                   ),
-                ],
-              ),
-            ],
+                ),
+              ],
+            ),
           ),
           GestureDetector(
             onTap: () {
@@ -169,10 +194,10 @@ class EnteteAgent extends StatelessWidget {
             child: Stack(
               clipBehavior: Clip.none,
               children: [
-                const Icon(
+                Icon(
                   Icons.notifications_outlined,
                   color: Colors.white,
-                  size: 22,
+                  size: iconSize,
                 ),
                 Positioned(
                   right: -2,

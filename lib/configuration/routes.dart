@@ -14,6 +14,8 @@ import '../ecrans/agent/ecran_mes_signalements.dart';
 import '../ecrans/ecran_onboarding.dart';
 
 
+import 'package:teranga_skills/widgets/widget_route_guard.dart';
+
 class Routes {
   Routes._();
 
@@ -32,11 +34,11 @@ static const String synchronisation = '/agent/sync';
     splash:       (_) => const EcranSplash(),   
     onboarding: (_) => const EcranOnboarding(),
     connexion: (_) => const PageConnexion(),
-    accueilAgent:(_) => const EcranAccueilAgent(),
-    profilAgent: (_) => const EcranProfil(),
-    mesSignalements: (_) => const EcranMesSignalements(),
-    synchronisation: (_) => const EcranSynchronisation(),
-    nouveauSignalement: (_) => const EcranNouveauSignalement(),
-    cameraDocument: (_) => const EcranCameraDocument(),
+    accueilAgent:(_) => const RouteGuard(child: EcranAccueilAgent()),
+    profilAgent: (_) => const RouteGuard(child: EcranProfil()),
+    mesSignalements: (_) => const RouteGuard(child: EcranMesSignalements()),
+    synchronisation: (_) => const RouteGuard(child: EcranSynchronisation()),
+    nouveauSignalement: (_) => const RouteGuard(child: EcranNouveauSignalement()),
+    cameraDocument: (_) => const RouteGuard(child: EcranCameraDocument()),
   };
 }
