@@ -1,0 +1,45 @@
+
+<div class="p-8 bg-slate-50 min-h-screen">
+
+<h1 class="text-3xl font-bold">
+Vue Intelligence DetectSen
+</h1>
+
+<p class="text-gray-500">
+Surveillance nationale des actes d'état civil
+</p>
+
+
+<div class="grid grid-cols-4 gap-6 mt-8">
+
+<div class="card">
+<h3>Actes enregistrés</h3>
+<p>{{stats.total_actes}}</p>
+</div>
+
+
+<div class="card">
+<h3>Fraudes détectées</h3>
+<p class="text-red-600">
+{{stats.total_fraudes}}
+</p>
+</div>
+
+
+<div class="card">
+<h3>Actes suspects</h3>
+<p>{{stats.total_suspects}}</p>
+</div>
+
+
+<div class="card">
+<h3>Validés IA</h3>
+<p class="text-green-600">
+{{stats.total_valides}}
+</p>
+</div>
+
+
+</div>
+
+</div>
