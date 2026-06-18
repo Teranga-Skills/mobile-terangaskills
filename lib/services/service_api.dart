@@ -438,7 +438,7 @@ class ServiceApi {
       'numeroDocument': UtilIdentification.sanitiser(
         ext['numero_identification']?.toString(),
       ),
-      'dateNaissance': _valeurAffichable(ext['date_naissance']),
+      'dateNaissance':ext['date_naissance'],
       'typeDocument': 'Extrait de Naissance',
       'nationalite': 'Sénégalaise',
       'noteAgent': 'Extrait automatiquement via OCR.',
