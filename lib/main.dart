@@ -1,9 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:teranga_skills/configuration/theme.dart';
+import 'package:teranga_skills/providers/provider_authentification.dart';
+import 'package:teranga_skills/providers/provider_signalements.dart';
 import 'configuration/routes.dart';
 
 void main() {
-  runApp(const TerangaSkillsApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ProviderAuthentification()),
+        ChangeNotifierProvider(create: (_) => ProviderSignalements()),
+      ],
+      child: const TerangaSkillsApp(),
+    ),
+  );
 }
 
 // ─── App Root ────────────────────────────────────────────────────────────────

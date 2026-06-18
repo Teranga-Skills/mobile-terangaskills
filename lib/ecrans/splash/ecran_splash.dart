@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../configuration/theme.dart';
 import '../../../configuration/routes.dart';
+import '../../../providers/provider_authentification.dart';
 
 class EcranSplash extends StatefulWidget {
   const EcranSplash({super.key});
@@ -35,11 +37,15 @@ class _EcranSplashState extends State<EcranSplash>
 
     _controller.forward();
 
-    // ── Redirection après 3 secondes ───────────────────────────
+    // ── Redirection après 3 secondes avec vérification session ──
     Future.delayed(const Duration(seconds: 3), () {
       if (!mounted) return;
-      Navigator.pushReplacementNamed(context, Routes.onboarding);
-      // ou Routes.connexion si tu n'as pas d'onboarding
+      final auth = Provider.of<ProviderAuthentification>(context, listen: false);
+      if (auth.estConnecte) {
+        Navigator.pushReplacementNamed(context, Routes.accueilAgent);
+      } else {
+        Navigator.pushReplacementNamed(context, Routes.onboarding);
+      }
     });
   }
 

@@ -8,11 +8,13 @@ class Constantes {
 
   // ─── API ────────────────────────────────────────────────────────
 
-  static const String urlBaseApi         = ' /api/v1';
-  static const String endpointConnexion  = '/auth/login/';
-  static const String endpointSignalements = '/signalements/';
-  static const String endpointOcr        = '/ia/ocr/';
-  static const String endpointScore      = '/ia/score/';
+  static const String urlBaseApi         = 'https://api-terangaskills.onrender.com';
+  static const String endpointConnexion  = '/api/v1/auth/login/';
+  static const String endpointDeconnexion = '/api/v1/auth/logout/';
+  static const String endpointSignalements = '/api/actes/';
+  static const String endpointCitoyens   = '/api/citoyens/';
+  static const String endpointCentres    = '/api/centres/';
+  static const String endpointOcr        = '/api/scan/';
   static const int    timeoutSecondes    = 30;
 
   // ─── STOCKAGE LOCAL (Hive) ──────────────────────────────────────
@@ -20,6 +22,7 @@ class Constantes {
   static const String boiteSignalements  = 'signalements_locaux';
   static const String boiteUtilisateur   = 'utilisateur';
   static const String cleToken           = 'jwt_token';
+  static const String cleRefreshToken    = 'jwt_refresh_token';
   static const String cleUtilisateur     = 'utilisateur_courant';
 
   // ─── ONBOARDING ─────────────────────────────────────────────────
