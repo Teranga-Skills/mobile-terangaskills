@@ -3,11 +3,11 @@
 // -----------------------------------------------------------------
 
 import 'dart:convert';
-import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/material.dart' show debugPrint;
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../configuration/constantes.dart';
+import '../utils/util_identification.dart';
 
 class ServiceApi {
   // Instance unique pour Singleton
@@ -277,7 +277,9 @@ class ServiceApi {
         'nom': prenomNom['nom'],
         'prenom': prenomNom['prenom'],
         'date_naissance': dateNaisApi,
-        'numero_identification': signalementJson['numeroDocument'],
+        'numero_identification': UtilIdentification.sanitiser(
+          signalementJson['numeroDocument']?.toString(),
+        ),
       };
 
       final responseCitoyen = await http.post(
@@ -299,11 +301,18 @@ class ServiceApi {
           );
           if (resCitoyensList.statusCode == 200) {
             final List<dynamic> citoyens = json.decode(utf8.decode(resCitoyensList.bodyBytes));
-            final ident = signalementJson['numeroDocument'];
-            final match = citoyens.firstWhere(
-              (c) => c['numero_identification'] == ident,
-              orElse: () => null,
-            );
+            final ident = signalementJson['numeroDocument']?.toString();
+            Map<String, dynamic>? match;
+            for (final c in citoyens) {
+              if (c is Map &&
+                  UtilIdentification.correspondent(
+                    c['numero_identification']?.toString(),
+                    ident,
+                  )) {
+                match = Map<String, dynamic>.from(c);
+                break;
+              }
+            }
             if (match != null) {
               citoyenUuid = match['id']?.toString();
             }
@@ -387,89 +396,51 @@ class ServiceApi {
 
   // ─── OCR & ANALYSE IA ───────────────────────────────────────────
   Future<Map<String, dynamic>> analyserDocument(String cheminImage) async {
-    try {
-      final token = await _getToken();
-      final url = Uri.parse('${Constantes.urlBaseApi}${Constantes.endpointOcr}');
-      
-      final request = http.MultipartRequest('POST', url);
-      if (token != null) {
-        request.headers['Authorization'] = 'Bearer $token';
-      }
-      
-      request.files.add(await http.MultipartFile.fromPath('document', cheminImage));
-      
-      final streamedResponse = await request.send();
-      final response = await http.Response.fromStream(streamedResponse);
-      
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        try {
-          final resJson = json.decode(utf8.decode(response.bodyBytes));
-          if (resJson is Map<String, dynamic> && resJson.containsKey('extracted_data')) {
-            final Map<String, dynamic> data = {};
-            data['analyse_id'] = resJson['analyse_id'];
-            data['decision'] = resJson['decision'];
-            data['fraud_score'] = resJson['fraud_score'];
-            data['similarity_score'] = resJson['similarity_score'];
-            data['matched'] = resJson['matched'];
-            data['matched_data'] = resJson['matched_data'];
-            
-            final ext = resJson['extracted_data'] ?? {};
-            data['nom'] = ext['nom'] != 'UNKNOWN' && ext['prenom'] != 'UNKNOWN' 
-                ? '${ext['prenom']} ${ext['nom']}'.trim() 
-                : ext['nom'];
-            data['numeroDocument'] = ext['numero_identification'];
-            data['dateNaissance'] = ext['date_naissance'];
-            data['typeDocument'] = 'Extrait de Naissance';
-            data['nationalite'] = 'Sénégalaise';
-            data['lieu'] = '';
-            data['noteAgent'] = 'Extrait automatiquement via OCR.';
-            return data;
-          }
-        } catch (_) {}
-      }
-    } catch (e) {
-      debugPrint('Erreur réseau durant le scan OCR : $e');
+    final token = await _getToken();
+    final url = Uri.parse('${Constantes.urlBaseApi}${Constantes.endpointOcr}');
+
+    final request = http.MultipartRequest('POST', url);
+    if (token != null) {
+      request.headers['Authorization'] = 'Bearer $token';
     }
 
-    // Fallback robuste sur les données mockées pour simuler l'OCR LLM du brief
-    try {
-      final String contenu = await rootBundle.loadString('assets/data.json');
-      final Map<String, dynamic> donnees = json.decode(contenu);
-      final Map<String, dynamic> ocrSim = Map<String, dynamic>.from(donnees['ocr_simulation']);
-      
-      ocrSim['analyse_id'] ??= 'mock-analyse-id-1234';
-      ocrSim['decision'] ??= 'SUSPECT';
-      ocrSim['fraud_score'] ??= 50;
-      ocrSim['matched_data'] ??= {
-        "nom": "SONKO",
-        "prenom": "Ousmane Jacques",
-        "date_naissance": "15/07/1974",
-        "numero_identification": "SN-1974-008273",
-        "type_acte": "NAISSANCE",
-        "centre": "Centre de Ziguinchor",
-      };
-      
-      return ocrSim;
-    } catch (e) {
-      return {
-        "analyse_id": "mock-analyse-id-fallback",
-        "decision": "SUSPECT",
-        "fraud_score": 50,
-        "nom": "Ousmane Sonko",
-        "typeDocument": "CIN",
-        "numeroDocument": "SN-1974-008273",
-        "dateNaissance": "15/07/1974",
-        "nationalite": "Sénégalaise",
-        "lieu": "Ziguinchor",
-        "noteAgent": "Extrait automatique (mode dégradé).",
-        "matched_data": {
-          "nom": "SONKO",
-          "prenom": "Ousmane Jacques",
-          "date_naissance": "15/07/1974",
-          "numero_identification": "SN-1974-008273",
-        }
-      };
+    request.files.add(await http.MultipartFile.fromPath('document', cheminImage));
+
+    final streamedResponse = await request.send().timeout(
+      const Duration(seconds: Constantes.timeoutSecondes),
+    );
+    final response = await http.Response.fromStream(streamedResponse);
+
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      throw Exception('Erreur OCR (${response.statusCode}) : ${response.body}');
     }
+
+    final resJson = json.decode(utf8.decode(response.bodyBytes));
+    if (resJson is! Map<String, dynamic> || !resJson.containsKey('extracted_data')) {
+      throw Exception('Réponse OCR invalide du serveur.');
+    }
+
+    final Map<String, dynamic> data = {};
+    data['analyse_id'] = resJson['analyse_id'];
+    data['decision'] = resJson['decision'];
+    data['fraud_score'] = resJson['fraud_score'];
+    data['similarity_score'] = resJson['similarity_score'];
+    data['matched'] = resJson['matched'];
+    data['matched_data'] = resJson['matched_data'];
+
+    final ext = resJson['extracted_data'] ?? {};
+    data['nom'] = ext['nom'] != 'UNKNOWN' && ext['prenom'] != 'UNKNOWN'
+        ? '${ext['prenom']} ${ext['nom']}'.trim()
+        : ext['nom'];
+    data['numeroDocument'] = UtilIdentification.sanitiser(
+      ext['numero_identification']?.toString(),
+    );
+    data['dateNaissance'] = ext['date_naissance'];
+    data['typeDocument'] = 'Extrait de Naissance';
+    data['nationalite'] = 'Sénégalaise';
+    data['lieu'] = '';
+    data['noteAgent'] = 'Extrait automatiquement via OCR.';
+    return data;
   }
 
   // Uploader le document scanné associé à un acte d'état civil

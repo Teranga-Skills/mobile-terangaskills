@@ -2,13 +2,30 @@
 // Constantes globales : URL API, clés de stockage local, config
 // -----------------------------------------------------------------
 
+import 'dart:io' show Platform;
+
+import 'package:flutter/foundation.dart' show kIsWeb;
+
 class Constantes {
 
   Constantes._();
 
-  // ─── API ────────────────────────────────────────────────────────
+  // ─── API (local par défaut) ─────────────────────────────────────
 
-  static const String urlBaseApi         = 'https://api-terangaskills.onrender.com';
+  /// Surcharge manuelle pour téléphone physique (ex. `http://192.168.1.10:8000`).
+  /// Laisser `null` pour la détection automatique émulateur / bureau.
+  static const String? urlApiOverride = null;
+
+  /// Émulateur Android → 10.0.2.2 ; iOS / Windows / Linux → 127.0.0.1
+  static String get urlBaseApi {
+    if (urlApiOverride != null && urlApiOverride!.isNotEmpty) {
+      return urlApiOverride!;
+    }
+    if (kIsWeb) return 'http://127.0.0.1:8000';
+    if (Platform.isAndroid) return 'http://10.0.2.2:8000';
+    return 'http://127.0.0.1:8000';
+  }
+
   static const String endpointConnexion  = '/api/v1/auth/login/';
   static const String endpointDeconnexion = '/api/v1/auth/logout/';
   static const String endpointSignalements = '/api/actes/';

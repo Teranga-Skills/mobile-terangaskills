@@ -10,6 +10,7 @@ import '../../providers/provider_signalements.dart';
 import '../../providers/provider_authentification.dart';
 import '../../widgets/widget_champ_texte.dart';
 import '../../widgets/widget_popup_score_ia.dart';
+import '../../utils/util_identification.dart';
 
 class EcranNouveauSignalement extends StatefulWidget {
   const EcranNouveauSignalement({super.key});
@@ -71,7 +72,9 @@ class _EcranNouveauSignalementState extends State<EcranNouveauSignalement> {
         _typeDocument = _typesDocuments.contains(arguments['typeDocument'])
             ? arguments['typeDocument']
             : 'CIN';
-        _numeroDocumentController.text = arguments['numeroDocument'] ?? '';
+        _numeroDocumentController.text = UtilIdentification.sanitiser(
+          arguments['numeroDocument']?.toString(),
+        );
         _dateNaissanceController.text = arguments['dateNaissance'] ?? '';
         _nationaliteController.text = arguments['nationalite'] ?? 'Sénégalaise';
         _lieuController.text = arguments['lieu'] ?? '';
@@ -118,7 +121,7 @@ class _EcranNouveauSignalementState extends State<EcranNouveauSignalement> {
   Map<String, dynamic> _donneesFormulaire() => {
     'nom': _nomController.text.trim(),
     'typeDocument': _typeDocument,
-    'numeroDocument': _numeroDocumentController.text.trim(),
+    'numeroDocument': UtilIdentification.sanitiser(_numeroDocumentController.text),
     'dateNaissance': _dateNaissanceController.text.trim(),
     'nationalite': _nationaliteController.text.trim(),
     'lieu': _lieuController.text.trim(),
@@ -420,7 +423,7 @@ class _EcranNouveauSignalementState extends State<EcranNouveauSignalement> {
                   placeholder: 'Numéro de document',
                   controller: _numeroDocumentController,
                   icone: Icons.badge_outlined,
-                  validateur: (v) => (v == null || v.trim().isEmpty) ? 'Le numéro de document est requis' : null,
+                  validateur: UtilIdentification.messageErreurFormat,
                 ),
                 const SizedBox(height: 28),
 
