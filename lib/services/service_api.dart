@@ -178,15 +178,47 @@ class ServiceApi {
 
         String lieu = centre != null ? (centre['nom'] ?? 'Sénégal') : 'Sénégal';
 
+        final derniereAnalyse = acte['derniere_analyse'];
+        String? decision;
+        int? fraudScore;
+        String? originalNom;
+        String? originalPrenom;
+        String? originalNumero;
+        String? originalDateNaissance;
+
+        if (derniereAnalyse != null) {
+          decision = derniereAnalyse['decision'];
+          fraudScore = derniereAnalyse['fraud_score'];
+          final matchedData = derniereAnalyse['matched_data'];
+          if (matchedData != null) {
+            originalNom = matchedData['nom'];
+            originalPrenom = matchedData['prenom'];
+            originalNumero = matchedData['numero_identification'];
+            originalDateNaissance = matchedData['date_naissance'];
+          }
+        }
+
         // Mapper le statut
         String statut = 'enCours';
         final statutApi = acte['statut']?.toString();
-        if (statutApi == 'VALIDE') {
-          statut = 'synchronise';
-        } else if (statutApi == 'SUSPECT') {
-          statut = 'erreur';
-        } else if (statutApi == 'EN_ATTENTE') {
-          statut = 'enCours';
+        
+        if (derniereAnalyse != null) {
+          final dec = derniereAnalyse['decision'];
+          if (dec == 'FRAUD') {
+            statut = 'fraude';
+          } else if (dec == 'SUSPECT') {
+            statut = 'suspect';
+          } else if (dec == 'VALID') {
+            statut = 'synchronise';
+          }
+        } else {
+          if (statutApi == 'VALIDE') {
+            statut = 'synchronise';
+          } else if (statutApi == 'SUSPECT') {
+            statut = 'suspect';
+          } else if (statutApi == 'EN_ATTENTE') {
+            statut = 'enCours';
+          }
         }
 
         // Formater la date
@@ -216,6 +248,12 @@ class ServiceApi {
           'dateNaissance': _formaterDateNaissanceAffiche(dateNaissance),
           'nationalite': nationalite,
           'noteAgent': 'Vérification effectuée via l\'API.',
+          'decision': decision,
+          'fraudScore': fraudScore,
+          'originalNom': originalNom,
+          'originalPrenom': originalPrenom,
+          'originalNumero': originalNumero,
+          'originalDateNaissance': originalDateNaissance,
         });
       }
 
@@ -306,6 +344,7 @@ class ServiceApi {
         'type_acte': typeActe,
         'citoyen': citoyenUuid,
         'centre': centreUuid,
+        'analyse_id': signalementJson['analyse_id'],
       };
 
       final responseActe = await http.post(
@@ -357,47 +396,34 @@ class ServiceApi {
         request.headers['Authorization'] = 'Bearer $token';
       }
       
-      // On utilise 'document' pour correspondre aux attentes originelles du backend
       request.files.add(await http.MultipartFile.fromPath('document', cheminImage));
       
-      // On envoie le fichier de scan
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
       
-      // Si l'API retourne un résultat OCR JSON structuré, on l'utilise.
       if (response.statusCode == 200 || response.statusCode == 201) {
         try {
           final resJson = json.decode(utf8.decode(response.bodyBytes));
-          if (resJson is Map<String, dynamic>) {
-            Map<String, dynamic>? rawExtracted;
+          if (resJson is Map<String, dynamic> && resJson.containsKey('extracted_data')) {
+            final Map<String, dynamic> data = {};
+            data['analyse_id'] = resJson['analyse_id'];
+            data['decision'] = resJson['decision'];
+            data['fraud_score'] = resJson['fraud_score'];
+            data['similarity_score'] = resJson['similarity_score'];
+            data['matched'] = resJson['matched'];
+            data['matched_data'] = resJson['matched_data'];
             
-            // Si le backend renvoie le format avec extracted_data imbriqué
-            if (resJson.containsKey('extracted_data')) {
-              final ext = resJson['extracted_data'];
-              if (ext is Map<String, dynamic>) {
-                rawExtracted = ext;
-              }
-            } else if (resJson.containsKey('nom') || resJson.containsKey('numero_identification') || resJson.containsKey('numeroDocument')) {
-              // Sinon format plat direct
-              rawExtracted = resJson;
-            }
-
-            if (rawExtracted != null) {
-              // Adapter le format du backend vers le format attendu par le mobile (camelCase + nom complet)
-              final String prenom = rawExtracted['prenom'] ?? '';
-              final String nom = rawExtracted['nom'] ?? '';
-              final String nomComplet = '$prenom $nom'.trim();
-              
-              return {
-                'nom': nomComplet.isNotEmpty ? nomComplet : (rawExtracted['nom'] ?? ''),
-                'numeroDocument': rawExtracted['numero_identification'] ?? rawExtracted['numeroDocument'] ?? '',
-                'dateNaissance': rawExtracted['date_naissance'] ?? rawExtracted['dateNaissance'] ?? '',
-                'typeDocument': rawExtracted['typeDocument'] ?? 'CIN',
-                'nationalite': rawExtracted['nationalite'] ?? 'Sénégalaise',
-                'lieu': rawExtracted['lieu'] ?? '',
-                'noteAgent': rawExtracted['noteAgent'] ?? 'Extrait automatiquement via OCR.',
-              };
-            }
+            final ext = resJson['extracted_data'] ?? {};
+            data['nom'] = ext['nom'] != 'UNKNOWN' && ext['prenom'] != 'UNKNOWN' 
+                ? '${ext['prenom']} ${ext['nom']}'.trim() 
+                : ext['nom'];
+            data['numeroDocument'] = ext['numero_identification'];
+            data['dateNaissance'] = ext['date_naissance'];
+            data['typeDocument'] = 'Extrait de Naissance';
+            data['nationalite'] = 'Sénégalaise';
+            data['lieu'] = '';
+            data['noteAgent'] = 'Extrait automatiquement via OCR.';
+            return data;
           }
         } catch (_) {}
       }
@@ -409,16 +435,39 @@ class ServiceApi {
     try {
       final String contenu = await rootBundle.loadString('assets/data.json');
       final Map<String, dynamic> donnees = json.decode(contenu);
-      return Map<String, dynamic>.from(donnees['ocr_simulation']);
+      final Map<String, dynamic> ocrSim = Map<String, dynamic>.from(donnees['ocr_simulation']);
+      
+      ocrSim['analyse_id'] ??= 'mock-analyse-id-1234';
+      ocrSim['decision'] ??= 'SUSPECT';
+      ocrSim['fraud_score'] ??= 50;
+      ocrSim['matched_data'] ??= {
+        "nom": "SONKO",
+        "prenom": "Ousmane Jacques",
+        "date_naissance": "15/07/1974",
+        "numero_identification": "SN-1974-008273",
+        "type_acte": "NAISSANCE",
+        "centre": "Centre de Ziguinchor",
+      };
+      
+      return ocrSim;
     } catch (e) {
       return {
+        "analyse_id": "mock-analyse-id-fallback",
+        "decision": "SUSPECT",
+        "fraud_score": 50,
         "nom": "Ousmane Sonko",
         "typeDocument": "CIN",
         "numeroDocument": "SN-1974-008273",
         "dateNaissance": "15/07/1974",
         "nationalite": "Sénégalaise",
         "lieu": "Ziguinchor",
-        "noteAgent": "Extrait automatique (mode dégradé)."
+        "noteAgent": "Extrait automatique (mode dégradé).",
+        "matched_data": {
+          "nom": "SONKO",
+          "prenom": "Ousmane Jacques",
+          "date_naissance": "15/07/1974",
+          "numero_identification": "SN-1974-008273",
+        }
       };
     }
   }

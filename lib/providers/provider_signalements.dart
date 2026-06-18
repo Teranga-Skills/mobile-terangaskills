@@ -235,6 +235,12 @@ class ProviderSignalements extends ChangeNotifier {
       case 'horsLigne':
         statut = StatutSignalement.horsLigne;
         break;
+      case 'suspect':
+        statut = StatutSignalement.suspect;
+        break;
+      case 'fraude':
+        statut = StatutSignalement.fraude;
+        break;
       case 'erreur':
       default:
         statut = StatutSignalement.erreur;
@@ -253,6 +259,12 @@ class ProviderSignalements extends ChangeNotifier {
       nationalite: json['nationalite'],
       noteAgent: json['noteAgent'],
       cheminImage: json['cheminImage'],
+      decision: json['decision'],
+      fraudScore: json['fraudScore'],
+      originalNom: json['originalNom'],
+      originalPrenom: json['originalPrenom'],
+      originalNumero: json['originalNumero'],
+      originalDateNaissance: json['originalDateNaissance'],
     );
   }
 
@@ -267,6 +279,12 @@ class ProviderSignalements extends ChangeNotifier {
         break;
       case StatutSignalement.horsLigne:
         statutStr = 'horsLigne';
+        break;
+      case StatutSignalement.suspect:
+        statutStr = 'suspect';
+        break;
+      case StatutSignalement.fraude:
+        statutStr = 'fraude';
         break;
       case StatutSignalement.erreur:
         statutStr = 'erreur';
@@ -285,6 +303,12 @@ class ProviderSignalements extends ChangeNotifier {
       'nationalite': s.nationalite,
       'noteAgent': s.noteAgent,
       'cheminImage': s.cheminImage,
+      'decision': s.decision,
+      'fraudScore': s.fraudScore,
+      'originalNom': s.originalNom,
+      'originalPrenom': s.originalPrenom,
+      'originalNumero': s.originalNumero,
+      'originalDateNaissance': s.originalDateNaissance,
     };
   }
 }

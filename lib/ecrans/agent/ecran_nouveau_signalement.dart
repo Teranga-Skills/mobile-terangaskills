@@ -30,6 +30,7 @@ class _EcranNouveauSignalementState extends State<EcranNouveauSignalement> {
   String _typeDocument = 'CIN';
   bool _donneesInitialisees = false;
   String? _cheminImage;
+  String? _analyseId;
 
   final List<String> _typesDocuments = [
     'CIN',
@@ -69,6 +70,7 @@ class _EcranNouveauSignalementState extends State<EcranNouveauSignalement> {
         _lieuController.text = arguments['lieu'] ?? '';
         _noteAgentController.text = arguments['noteAgent'] ?? '';
         _cheminImage = arguments['cheminImage'];
+        _analyseId = arguments['analyse_id'];
       } else {
         // Obtenir la zone de l'agent connecté par défaut pour le lieu
         final authProvider = Provider.of<ProviderAuthentification>(context, listen: false);
@@ -105,6 +107,7 @@ class _EcranNouveauSignalementState extends State<EcranNouveauSignalement> {
       'lieu': _lieuController.text.trim(),
       'noteAgent': _noteAgentController.text.trim(),
       'cheminImage': _cheminImage,
+      'analyse_id': _analyseId,
     };
 
     final estSynchronise = await provider.soumettreSignalement(donneesFormulaire);
@@ -180,6 +183,7 @@ class _EcranNouveauSignalementState extends State<EcranNouveauSignalement> {
   @override
   Widget build(BuildContext context) {
     final provider = Provider.of<ProviderSignalements>(context);
+    final arguments = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
 
     return Scaffold(
       backgroundColor: ThemeApplication.couleurFond,
@@ -210,6 +214,8 @@ class _EcranNouveauSignalementState extends State<EcranNouveauSignalement> {
               children: [
                 // ─── Statut Réseau Actuel ────────────────────────────────────
                 _construireBanniereReseau(provider.estEnLigne),
+                const SizedBox(height: 20),
+                _construireAlerteFraude(arguments),
                 const SizedBox(height: 20),
 
                 Text(
@@ -407,6 +413,186 @@ class _EcranNouveauSignalementState extends State<EcranNouveauSignalement> {
           ),
         ],
       ),
+    );
+  }
+
+  // Widget alerte de fraude / suspect
+  Widget _construireAlerteFraude(Map<String, dynamic>? arguments) {
+    if (arguments == null) return const SizedBox.shrink();
+    final decision = arguments['decision'];
+    final fraudScore = arguments['fraud_score'];
+    final matchedData = arguments['matched_data'];
+
+    if (decision == null) return const SizedBox.shrink();
+
+    Color color;
+    IconData icon;
+    String statusLabel;
+    
+    if (decision == 'FRAUD') {
+      color = ThemeApplication.couleurDanger;
+      icon = Icons.gpp_bad_rounded;
+      statusLabel = 'FRAUDE DÉTECTÉE';
+    } else if (decision == 'SUSPECT') {
+      color = ThemeApplication.couleurAvertissement;
+      icon = Icons.warning_amber_rounded;
+      statusLabel = 'FRAUDE SUSPECTE';
+    } else {
+      color = ThemeApplication.couleurSecondaire;
+      icon = Icons.verified_user_rounded;
+      statusLabel = 'DOCUMENT VALIDE';
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Card score de fraude
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.08),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: color.withOpacity(0.3), width: 1.5),
+          ),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Icon(icon, color: color, size: 24),
+                  const SizedBox(width: 12),
+                  Text(
+                    statusLabel,
+                    style: TextStyle(
+                      fontFamily: 'Montserrat',
+                      fontWeight: FontWeight.w800,
+                      color: color,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const Spacer(),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: color,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      'Score: $fraudScore%',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              if (decision == 'FRAUD') ...[
+                const SizedBox(height: 8),
+                const Text(
+                  'Le numéro d\'identification extrait n\'existe pas dans les registres officiels de l\'état civil.',
+                  style: TextStyle(color: Colors.black87, fontSize: 13, height: 1.4),
+                ),
+              ],
+              if (decision == 'SUSPECT') ...[
+                const SizedBox(height: 8),
+                const Text(
+                  'Le numéro d\'identification correspond à un citoyen existant, mais le nom ou le prénom ne correspond pas.',
+                  style: TextStyle(color: Colors.black87, fontSize: 13, height: 1.4),
+                ),
+              ],
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // Comparaison si suspect ou fraude
+        if (matchedData != null && (decision == 'SUSPECT' || decision == 'FRAUD')) ...[
+          _construireTitreSection('Comparaison des données'),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: Column(
+              children: [
+                _construireLigneComparaison(
+                  champ: 'Numéro ID',
+                  scan: arguments['numeroDocument'] ?? '',
+                  base: matchedData['numero_identification'] ?? '',
+                ),
+                const Divider(height: 16),
+                _construireLigneComparaison(
+                  champ: 'Nom',
+                  scan: arguments['nom'] ?? '',
+                  base: matchedData['nom'] ?? '',
+                ),
+                const Divider(height: 16),
+                _construireLigneComparaison(
+                  champ: 'Prénom',
+                  scan: arguments['prenom'] ?? '',
+                  base: matchedData['prenom'] ?? '',
+                ),
+                const Divider(height: 16),
+                _construireLigneComparaison(
+                  champ: 'Naissance',
+                  scan: arguments['dateNaissance'] ?? '',
+                  base: matchedData['date_naissance'] ?? '',
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+        ],
+      ],
+    );
+  }
+
+  Widget _construireLigneComparaison({required String champ, required String scan, required String base}) {
+    final diff = scan.trim().toLowerCase() != base.trim().toLowerCase();
+    return Row(
+      children: [
+        Expanded(
+          flex: 2,
+          child: Text(
+            champ,
+            style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black54, fontSize: 13),
+          ),
+        ),
+        Expanded(
+          flex: 3,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Scanné', style: TextStyle(fontSize: 10, color: Colors.grey)),
+              Text(
+                scan,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: diff ? ThemeApplication.couleurDanger : Colors.black87,
+                  fontWeight: diff ? FontWeight.bold : FontWeight.normal,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          flex: 3,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Base SQL', style: TextStyle(fontSize: 10, color: Colors.grey)),
+              Text(
+                base,
+                style: const TextStyle(fontSize: 13, color: Colors.black87),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

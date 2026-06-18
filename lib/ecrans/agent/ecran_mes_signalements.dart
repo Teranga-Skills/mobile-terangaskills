@@ -515,6 +515,8 @@ class EcranDetailSignalement extends StatelessWidget {
                   ),
                 ),
 
+                const SizedBox(height: 16),
+                _construireAlerteFraude(signalement),
                 const SizedBox(height: 24),
 
                 // Carte infos document
@@ -629,6 +631,186 @@ class EcranDetailSignalement extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _construireAlerteFraude(ModeleSignalement signalement) {
+    final decision = signalement.decision;
+    final fraudScore = signalement.fraudScore;
+
+    if (decision == null) return const SizedBox.shrink();
+
+    Color color;
+    IconData icon;
+    String statusLabel;
+    
+    if (decision == 'FRAUD') {
+      color = ThemeApplication.couleurDanger;
+      icon = Icons.gpp_bad_rounded;
+      statusLabel = 'FRAUDE DÉTECTÉE';
+    } else if (decision == 'SUSPECT') {
+      color = ThemeApplication.couleurAvertissement;
+      icon = Icons.warning_amber_rounded;
+      statusLabel = 'FRAUDE SUSPECTE';
+    } else {
+      color = ThemeApplication.couleurSecondaire;
+      icon = Icons.verified_user_rounded;
+      statusLabel = 'DOCUMENT VALIDE';
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.08),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: color.withOpacity(0.3), width: 1.5),
+          ),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Icon(icon, color: color, size: 24),
+                  const SizedBox(width: 12),
+                  Text(
+                    statusLabel,
+                    style: TextStyle(
+                      fontFamily: 'Montserrat',
+                      fontWeight: FontWeight.w800,
+                      color: color,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const Spacer(),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: color,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      'Score: $fraudScore%',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              if (decision == 'FRAUD') ...[
+                const SizedBox(height: 8),
+                const Text(
+                  'Le numéro d\'identification extrait n\'existe pas dans les registres officiels de l\'état civil.',
+                  style: TextStyle(color: Colors.black87, fontSize: 13, height: 1.4),
+                ),
+              ],
+              if (decision == 'SUSPECT') ...[
+                const SizedBox(height: 8),
+                const Text(
+                  'Le numéro d\'identification correspond à un citoyen existant, mais le nom ou le prénom ne correspond pas.',
+                  style: TextStyle(color: Colors.black87, fontSize: 13, height: 1.4),
+                ),
+              ],
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        if (signalement.originalNom != null && (decision == 'SUSPECT' || decision == 'FRAUD')) ...[
+          const Text(
+            'Comparaison des données',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+              fontFamily: 'Montserrat',
+            ),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: Column(
+              children: [
+                _construireLigneComparaison(
+                  champ: 'Numéro ID',
+                  scan: signalement.numeroDocument ?? '',
+                  base: signalement.originalNumero ?? '',
+                ),
+                const Divider(height: 16),
+                _construireLigneComparaison(
+                  champ: 'Nom Complet',
+                  scan: signalement.nom,
+                  base: '${signalement.originalPrenom ?? ''} ${signalement.originalNom ?? ''}'.trim(),
+                ),
+                const Divider(height: 16),
+                _construireLigneComparaison(
+                  champ: 'Naissance',
+                  scan: signalement.dateNaissance ?? '',
+                  base: signalement.originalDateNaissance ?? '',
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+        ],
+      ],
+    );
+  }
+
+  Widget _construireLigneComparaison({required String champ, required String scan, required String base}) {
+    final scanNorm = scan.replaceAll(' ', '').trim().toLowerCase();
+    final baseNorm = base.replaceAll(' ', '').trim().toLowerCase();
+    final diff = scanNorm != baseNorm;
+
+    return Row(
+      children: [
+        Expanded(
+          flex: 2,
+          child: Text(
+            champ,
+            style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black54, fontSize: 13),
+          ),
+        ),
+        Expanded(
+          flex: 3,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Scanné', style: TextStyle(fontSize: 10, color: Colors.grey)),
+              Text(
+                scan,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: diff ? ThemeApplication.couleurDanger : Colors.black87,
+                  fontWeight: diff ? FontWeight.bold : FontWeight.normal,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          flex: 3,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Base SQL', style: TextStyle(fontSize: 10, color: Colors.grey)),
+              Text(
+                base,
+                style: const TextStyle(fontSize: 13, color: Colors.black87),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
