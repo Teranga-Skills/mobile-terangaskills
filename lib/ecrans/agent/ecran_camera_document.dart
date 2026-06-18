@@ -179,8 +179,8 @@ class _EcranCameraDocumentState extends State<EcranCameraDocument> {
                   Column(
                     children: [
                       _construireBoutonOption(
-                        label: 'Lancer l\'analyse IA (GPT-4o)',
-                        icone: Icons.auto_awesome_rounded,
+                        label: 'Extraire les données du document',
+                        icone: Icons.document_scanner_outlined,
                         onTap: _lancerAnalyse,
                       ),
                       const SizedBox(height: 12),
@@ -267,7 +267,7 @@ class _EcranCameraDocumentState extends State<EcranCameraDocument> {
                       ),
                       const SizedBox(height: 28),
                       Text(
-                        'Extraction IA en cours...',
+                        'Extraction des données en cours...',
                         textAlign: TextAlign.center,
                         style: ThemeApplication.titrePrincipal.copyWith(
                           fontSize: 18,
@@ -276,7 +276,7 @@ class _EcranCameraDocumentState extends State<EcranCameraDocument> {
                       ),
                       const SizedBox(height: 10),
                       Text(
-                        'Le copilote IA structure les données de l\'acte de naissance et vérifie la cohérence sémantique...',
+                        'L\'IA lit le document et remplit le formulaire. La vérification du registre se fera ensuite via le bouton Analyser.',
                         textAlign: TextAlign.center,
                         style: ThemeApplication.corpsMedium.copyWith(
                           color: Colors.white.withOpacity(0.6),

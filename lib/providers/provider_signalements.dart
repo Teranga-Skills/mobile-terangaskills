@@ -205,16 +205,33 @@ class ProviderSignalements extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Simuler l'OCR sur une image
+  // Extraction OCR depuis une image (sans comparaison registre)
   Future<Map<String, dynamic>?> executerOcr(String imagePath) async {
     _chargement = true;
     notifyListeners();
 
     try {
-      final resultatOcr = await _serviceApi.analyserDocument(imagePath);
+      final resultat = await _serviceApi.extraireDocument(imagePath);
       _chargement = false;
       notifyListeners();
-      return resultatOcr;
+      return resultat;
+    } catch (e) {
+      _chargement = false;
+      notifyListeners();
+      return null;
+    }
+  }
+
+  // Comparaison avec le registre officiel + score de fraude
+  Future<Map<String, dynamic>?> executerAnalyse(Map<String, dynamic> donneesFormulaire) async {
+    _chargement = true;
+    notifyListeners();
+
+    try {
+      final resultat = await _serviceApi.analyserAvecRegistre(donneesFormulaire);
+      _chargement = false;
+      notifyListeners();
+      return resultat;
     } catch (e) {
       _chargement = false;
       notifyListeners();

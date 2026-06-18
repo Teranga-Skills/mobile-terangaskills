@@ -32,6 +32,7 @@ class Constantes {
   static const String endpointCitoyens   = '/api/citoyens/';
   static const String endpointCentres    = '/api/centres/';
   static const String endpointOcr        = '/api/scan/';
+  static const String endpointAnalyse    = '/api/analyse/';
   static const int    timeoutSecondes    = 30;
 
   // ─── STOCKAGE LOCAL (Hive) ──────────────────────────────────────

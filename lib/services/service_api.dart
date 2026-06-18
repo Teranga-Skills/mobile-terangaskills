@@ -394,8 +394,8 @@ class ServiceApi {
     }
   }
 
-  // ─── OCR & ANALYSE IA ───────────────────────────────────────────
-  Future<Map<String, dynamic>> analyserDocument(String cheminImage) async {
+  // ─── OCR (extraction seule, sans comparaison) ───────────────────
+  Future<Map<String, dynamic>> extraireDocument(String cheminImage) async {
     final token = await _getToken();
     final url = Uri.parse('${Constantes.urlBaseApi}${Constantes.endpointOcr}');
 
@@ -420,27 +420,71 @@ class ServiceApi {
       throw Exception('Réponse OCR invalide du serveur.');
     }
 
-    final Map<String, dynamic> data = {};
-    data['analyse_id'] = resJson['analyse_id'];
-    data['decision'] = resJson['decision'];
-    data['fraud_score'] = resJson['fraud_score'];
-    data['similarity_score'] = resJson['similarity_score'];
-    data['matched'] = resJson['matched'];
-    data['matched_data'] = resJson['matched_data'];
-
     final ext = resJson['extracted_data'] ?? {};
-    data['nom'] = ext['nom'] != 'UNKNOWN' && ext['prenom'] != 'UNKNOWN'
-        ? '${ext['prenom']} ${ext['nom']}'.trim()
-        : ext['nom'];
-    data['numeroDocument'] = UtilIdentification.sanitiser(
-      ext['numero_identification']?.toString(),
-    );
-    data['dateNaissance'] = ext['date_naissance'];
-    data['typeDocument'] = 'Extrait de Naissance';
-    data['nationalite'] = 'Sénégalaise';
-    data['lieu'] = '';
-    data['noteAgent'] = 'Extrait automatiquement via OCR.';
-    return data;
+    final prenom = ext['prenom']?.toString();
+    final nom = ext['nom']?.toString();
+    final nomComplet = (prenom != null &&
+            prenom.isNotEmpty &&
+            prenom.toUpperCase() != 'UNKNOWN' &&
+            nom != null &&
+            nom.isNotEmpty &&
+            nom.toUpperCase() != 'UNKNOWN')
+        ? '$prenom $nom'.trim()
+        : (nom ?? '');
+
+    return {
+      'nom': nomComplet,
+      'prenom': (prenom != null && prenom.toUpperCase() != 'UNKNOWN') ? prenom : null,
+      'numeroDocument': UtilIdentification.sanitiser(
+        ext['numero_identification']?.toString(),
+      ),
+      'dateNaissance': _valeurAffichable(ext['date_naissance']),
+      'typeDocument': 'Extrait de Naissance',
+      'nationalite': 'Sénégalaise',
+      'noteAgent': 'Extrait automatiquement via OCR.',
+    };
+  }
+
+  // ─── ANALYSE IA (comparaison registre + score) ──────────────────
+  Future<Map<String, dynamic>> analyserAvecRegistre(Map<String, dynamic> donnees) async {
+    final headers = await _getHeaders();
+    final prenomNom = _separerPrenomNom(donnees['nom']?.toString() ?? '');
+
+    final body = json.encode({
+      'nom': prenomNom['nom'],
+      'prenom': donnees['prenom'] ?? prenomNom['prenom'],
+      'date_naissance': donnees['dateNaissance'],
+      'numero_identification': UtilIdentification.sanitiser(
+        donnees['numeroDocument']?.toString(),
+      ),
+    });
+
+    final response = await http
+        .post(
+          Uri.parse('${Constantes.urlBaseApi}${Constantes.endpointAnalyse}'),
+          headers: headers,
+          body: body,
+        )
+        .timeout(const Duration(seconds: Constantes.timeoutSecondes));
+
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      throw Exception('Erreur analyse (${response.statusCode}) : ${response.body}');
+    }
+
+    final resJson = json.decode(utf8.decode(response.bodyBytes));
+    if (resJson is! Map<String, dynamic>) {
+      throw Exception('Réponse analyse invalide du serveur.');
+    }
+
+    return {
+      'analyse_id': resJson['analyse_id'],
+      'decision': resJson['decision'],
+      'fraud_score': resJson['fraud_score'],
+      'similarity_score': resJson['similarity_score'],
+      'matched': resJson['matched'],
+      'matched_data': resJson['matched_data'],
+      'lieu': resJson['matched_data']?['centre'],
+    };
   }
 
   // Uploader le document scanné associé à un acte d'état civil

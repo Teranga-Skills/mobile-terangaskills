@@ -75,20 +75,23 @@ class _EcranNouveauSignalementState extends State<EcranNouveauSignalement> {
         _numeroDocumentController.text = UtilIdentification.sanitiser(
           arguments['numeroDocument']?.toString(),
         );
-        _dateNaissanceController.text = arguments['dateNaissance'] ?? '';
+        _dateNaissanceController.text = _valeurAffichable(arguments['dateNaissance']);
         _nationaliteController.text = arguments['nationalite'] ?? 'Sénégalaise';
-        _lieuController.text = arguments['lieu'] ?? '';
+        final lieuArg = arguments['lieu']?.toString();
+        if (lieuArg != null && lieuArg.isNotEmpty) {
+          _lieuController.text = lieuArg;
+        } else {
+          final authProvider = Provider.of<ProviderAuthentification>(context, listen: false);
+          _lieuController.text = authProvider.utilisateurCourant?.zone ?? '';
+        }
         _noteAgentController.text = arguments['noteAgent'] ?? '';
         _cheminImage = arguments['cheminImage'];
-        _analyseId = arguments['analyse_id'];
-        _decision = arguments['decision']?.toString();
-        _fraudScore = _parseScore(arguments['fraud_score']);
-        _matchedData = arguments['matched_data'] is Map
-            ? Map<String, dynamic>.from(arguments['matched_data'] as Map)
-            : null;
         _prenomScan = arguments['prenom']?.toString();
-        if (_prenomScan == null && _matchedData != null) {
-          _prenomScan = _matchedData!['prenom']?.toString();
+        if (_prenomScan == null && _nomController.text.isNotEmpty) {
+          final parts = _nomController.text.trim().split(' ');
+          if (parts.length >= 2) {
+            _prenomScan = parts.sublist(0, parts.length - 1).join(' ');
+          }
         }
       } else {
         // Obtenir la zone de l'agent connecté par défaut pour le lieu
@@ -118,6 +121,13 @@ class _EcranNouveauSignalementState extends State<EcranNouveauSignalement> {
     return int.tryParse(value.toString());
   }
 
+  String _valeurAffichable(dynamic value) {
+    if (value == null) return '';
+    final text = value.toString().trim();
+    if (text.isEmpty || text.toUpperCase() == 'UNKNOWN') return '';
+    return text;
+  }
+
   Map<String, dynamic> _donneesFormulaire() => {
     'nom': _nomController.text.trim(),
     'typeDocument': _typeDocument,
@@ -132,36 +142,17 @@ class _EcranNouveauSignalementState extends State<EcranNouveauSignalement> {
     'fraudScore': _fraudScore,
   };
 
-  // Lancer l'analyse IA et afficher la pop-up de score
+  // Lancer l'analyse IA (comparaison registre) et afficher la pop-up de score
   Future<void> _analyser() async {
     if (!_formKey.currentState!.validate()) return;
 
-    // Score déjà obtenu au scan → afficher la pop-up directement
-    if (_decision != null && _fraudScore != null) {
-      _afficherPopupScore();
-      return;
-    }
-
     final provider = Provider.of<ProviderSignalements>(context, listen: false);
-
-    if (_cheminImage == null || _cheminImage!.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text(
-            'Impossible d\'analyser : aucun document scanné disponible.',
-            style: TextStyle(fontFamily: 'Montserrat'),
-          ),
-          backgroundColor: ThemeApplication.couleurDanger,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
-      );
-      return;
-    }
 
     setState(() => _analyseEnCours = true);
 
-    final resultatAnalyse = await provider.executerOcr(_cheminImage!);
+    final donnees = _donneesFormulaire();
+    donnees['prenom'] = _prenomScan;
+    final resultatAnalyse = await provider.executerAnalyse(donnees);
 
     if (!mounted) return;
     setState(() => _analyseEnCours = false);
@@ -170,7 +161,7 @@ class _EcranNouveauSignalementState extends State<EcranNouveauSignalement> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text(
-            'L\'analyse du document a échoué. Veuillez réessayer.',
+            'L\'analyse a échoué. Vérifiez votre connexion et réessayez.',
             style: TextStyle(fontFamily: 'Montserrat'),
           ),
           backgroundColor: ThemeApplication.couleurDanger,
@@ -183,11 +174,18 @@ class _EcranNouveauSignalementState extends State<EcranNouveauSignalement> {
 
     _decision = resultatAnalyse['decision']?.toString() ?? 'VALID';
     _fraudScore = _parseScore(resultatAnalyse['fraud_score']) ?? 0;
-    _analyseId = resultatAnalyse['analyse_id']?.toString() ?? _analyseId;
+    _analyseId = resultatAnalyse['analyse_id']?.toString();
     _matchedData = resultatAnalyse['matched_data'] is Map
         ? Map<String, dynamic>.from(resultatAnalyse['matched_data'] as Map)
-        : _matchedData;
-    _prenomScan = resultatAnalyse['prenom']?.toString() ?? _prenomScan;
+        : null;
+
+    final lieuRegistre = resultatAnalyse['lieu']?.toString() ??
+        _matchedData?['centre']?.toString();
+    if (lieuRegistre != null && lieuRegistre.isNotEmpty) {
+      setState(() {
+        _lieuController.text = lieuRegistre;
+      });
+    }
 
     _afficherPopupScore();
   }
