@@ -1,36 +1,37 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:teranga_skills/configuration/theme.dart';
+import 'package:teranga_skills/providers/provider_authentification.dart';
+import 'package:teranga_skills/providers/provider_signalements.dart';
+import 'configuration/routes.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ProviderAuthentification()),
+        ChangeNotifierProvider(create: (_) => ProviderSignalements()),
+      ],
+      child: const TerangaSkillsApp(),
+    ),
+  );
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+// ─── App Root ────────────────────────────────────────────────────────────────
 
-  // This widget is the root of your application.
+class TerangaSkillsApp extends StatelessWidget {
+  const TerangaSkillsApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: const Text('Hello word'),
+      title: 'TerangaSkills',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeApplication.themeClair,
+      darkTheme: ThemeApplication.themeSombre,
+      initialRoute: Routes.splash, 
+      routes: Routes.toutes,
     );
   }
 }
+
