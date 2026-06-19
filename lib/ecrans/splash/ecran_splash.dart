@@ -86,7 +86,7 @@ class _EcranSplashState extends State<EcranSplash>
 
                 // ── Nom de l'app ──────────────────────────────
                 const Text(
-                  'DetectSen',
+                  'Teranga Scan',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 32,

@@ -83,7 +83,7 @@ class _PageConnexionState extends State<PageConnexion> {
                   Column(
                     children: [
                       Text(
-                        'DetectSen',
+                        'Teranga Scan',
                         textAlign: TextAlign.center,
                         style: ThemeApplication.titrePrincipal.copyWith(
                           fontSize: 36,
