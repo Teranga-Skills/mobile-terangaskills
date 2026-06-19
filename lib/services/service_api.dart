@@ -488,7 +488,7 @@ class ServiceApi {
         ext['numero_identification']?.toString(),
       ),
       'dateNaissance':ext['date_naissance'],
-      'typeDocument': 'Extrait de Naissance',
+      'typeDocument': ext['type_acte'],
       'nationalite': 'Sénégalaise',
       'noteAgent': 'Extrait automatiquement via OCR.',
     };

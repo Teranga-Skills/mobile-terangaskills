@@ -393,7 +393,7 @@ class _EcranNouveauSignalementState extends State<EcranNouveauSignalement> {
           onPressed: () => Navigator.pushNamed(context, Routes.accueilAgent),
         ),
         title: Text(
-          'Détails Signalement',
+          'Contrôle',
           style: ThemeApplication.titrePrincipal.copyWith(
             fontSize: 20,
             color: Colors.white,
