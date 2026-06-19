@@ -18,12 +18,12 @@ class Constantes {
 
   /// Émulateur Android → 10.0.2.2 ; iOS / Windows / Linux → 127.0.0.1
   static String get urlBaseApi {
-    if (urlApiOverride != null && urlApiOverride!.isNotEmpty) {
-      return urlApiOverride!;
-    }
-    if (kIsWeb) return 'http://127.0.0.1:8000';
-    if (Platform.isAndroid) return 'http://192.168.222.81:8000';
-    return 'http://127.0.0.1:8000';
+    // if (urlApiOverride != null && urlApiOverride!.isNotEmpty) {
+    //   return urlApiOverride!;
+    // }
+    // if (kIsWeb) return 'http://127.0.0.1:8000';
+    // if (Platform.isAndroid) return 'http://192.168.222.81:8000';
+    return 'https://api-terangaskills.onrender.com';
   }
 
   static const String endpointConnexion  = '/api/v1/auth/login/';
