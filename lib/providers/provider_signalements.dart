@@ -168,7 +168,18 @@ class ProviderSignalements extends ChangeNotifier {
       
       // Simuler la synchronisation
       try {
-        final donnees = _modeleVersJson(item);
+        final Map<String, dynamic> donnees = _modeleVersJson(item);
+        
+        // Si aucune analyse n'a été faite (mode offline), on la lance en ligne d'abord
+        if (item.decision == null || item.id.startsWith('offline_')) {
+          try {
+            final analyseResult = await _serviceApi.analyserAvecRegistre(donnees);
+            donnees['analyse_id'] = analyseResult['analyse_id'];
+          } catch (e) {
+            debugPrint('Erreur lors de l\'analyse IA de synchronisation : $e');
+          }
+        }
+
         final resultat = await _serviceApi.soumettreSignalement(donnees);
         
         // Retirer de la file d'attente

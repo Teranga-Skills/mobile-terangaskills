@@ -349,12 +349,14 @@ class ServiceApi {
 
       // 3. Créer l'acte d'état civil
       final typeActe = _mapDocVersTypeActe(signalementJson['typeDocument']);
-      final acteBody = {
+      final Map<String, dynamic> acteBody = {
         'type_acte': typeActe,
         'citoyen': citoyenUuid,
         'centre': centreUuid,
-        'analyse_id': signalementJson['analyse_id'],
       };
+      if (signalementJson['analyse_id'] != null) {
+        acteBody['analyse_id'] = signalementJson['analyse_id'];
+      }
 
       final responseActe = await http.post(
         Uri.parse('${Constantes.urlBaseApi}${Constantes.endpointSignalements}'),
@@ -373,18 +375,65 @@ class ServiceApi {
         }
 
         // Renvoyer le signalement formaté pour le frontend
+        final derniereAnalyse = acteData['derniere_analyse'];
+        String? decision;
+        int? fraudScore;
+        String? originalNom;
+        String? originalPrenom;
+        String? originalNumero;
+        String? originalDateNaissance;
+
+        if (derniereAnalyse != null) {
+          decision = derniereAnalyse['decision'];
+          fraudScore = (derniereAnalyse['fraud_score'] as num?)?.toInt();
+          final matchedData = derniereAnalyse['matched_data'];
+          if (matchedData != null) {
+            originalNom = matchedData['nom'];
+            originalPrenom = matchedData['prenom'];
+            originalNumero = matchedData['numero_identification'];
+            originalDateNaissance = matchedData['date_naissance'];
+          }
+        }
+
+        String statut = 'synchronise';
+        final statutApi = acteData['statut']?.toString();
+        if (derniereAnalyse != null) {
+          final dec = derniereAnalyse['decision'];
+          if (dec == 'FRAUD') {
+            statut = 'fraude';
+          } else if (dec == 'SUSPECT') {
+            statut = 'suspect';
+          } else if (dec == 'VALID') {
+            statut = 'synchronise';
+          }
+        } else {
+          if (statutApi == 'VALIDE') {
+            statut = 'synchronise';
+          } else if (statutApi == 'SUSPECT') {
+            statut = 'suspect';
+          } else if (statutApi == 'EN_ATTENTE') {
+            statut = 'enCours';
+          }
+        }
+
         return {
           'id': acteData['id']?.toString() ?? '',
           'nom': signalementJson['nom'],
           'typeDocument': signalementJson['typeDocument'],
           'lieu': signalementJson['lieu'] ?? 'Non spécifié',
           'date': "À l'instant",
-          'statut': "synchronise",
+          'statut': statut,
           'numeroDocument': signalementJson['numeroDocument'],
           'dateNaissance': signalementJson['dateNaissance'],
           'nationalite': signalementJson['nationalite'] ?? 'Sénégalaise',
           'noteAgent': signalementJson['noteAgent'] ?? '',
           'cheminImage': cheminImage,
+          'decision': decision,
+          'fraudScore': fraudScore,
+          'originalNom': originalNom,
+          'originalPrenom': originalPrenom,
+          'originalNumero': originalNumero,
+          'originalDateNaissance': originalDateNaissance,
         };
       } else {
         throw Exception('Erreur lors de la création de l\'acte (${responseActe.statusCode})');

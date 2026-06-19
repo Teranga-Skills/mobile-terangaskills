@@ -148,6 +148,11 @@ class _EcranNouveauSignalementState extends State<EcranNouveauSignalement> {
 
     final provider = Provider.of<ProviderSignalements>(context, listen: false);
 
+    if (!provider.estEnLigne) {
+      _confirmerSauvegardeHorsLigne();
+      return;
+    }
+
     setState(() => _analyseEnCours = true);
 
     final donnees = _donneesFormulaire();
@@ -188,6 +193,78 @@ class _EcranNouveauSignalementState extends State<EcranNouveauSignalement> {
     }
 
     _afficherPopupScore();
+  }
+
+  void _confirmerSauvegardeHorsLigne() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Row(
+            children: const [
+              Icon(Icons.wifi_off_rounded, color: ThemeApplication.couleurAvertissement),
+              SizedBox(width: 10),
+              Text(
+                'Mode hors-ligne',
+                style: TextStyle(
+                  fontFamily: 'Montserrat',
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
+            ],
+          ),
+          content: const Text(
+            'L\'analyse en temps réel est impossible car vous n\'êtes pas connecté à internet. '
+            'Souhaitez-vous enregistrer ce contrôle localement pour l\'envoyer plus tard ?',
+            style: TextStyle(fontFamily: 'Montserrat', fontSize: 14, height: 1.4),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text(
+                'Annuler',
+                style: TextStyle(fontFamily: 'Montserrat', color: Colors.grey, fontWeight: FontWeight.bold),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.of(dialogContext).pop();
+                setState(() => _envoiEnCours = true);
+                final provider = Provider.of<ProviderSignalements>(context, listen: false);
+                await provider.soumettreSignalement(_donneesFormulaire());
+                if (!mounted) return;
+                setState(() => _envoiEnCours = false);
+                
+                _afficherMessageSucces(
+                  'Enregistré hors-ligne !',
+                  'Le rapport a été mis en attente et sera synchronisé automatiquement.',
+                  Icons.wifi_off_rounded,
+                  ThemeApplication.couleurAvertissement,
+                );
+
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  Routes.accueilAgent,
+                  (route) => false,
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: ThemeApplication.couleurAvertissement,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                elevation: 0,
+              ),
+              child: const Text(
+                'Enregistrer',
+                style: TextStyle(fontFamily: 'Montserrat', color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _afficherPopupScore() {
