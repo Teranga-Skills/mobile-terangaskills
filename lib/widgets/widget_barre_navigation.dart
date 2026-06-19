@@ -43,7 +43,7 @@ class WidgetBarreNavigation extends StatelessWidget {
     ),
     _ItemNavData(
       icone: Icons.sync_rounded,
-      iconeActif: Icons.sync_alt_rounded,
+      iconeActif: Icons.sync_rounded,
       label: 'Sync',
     ),
     _ItemNavData(
@@ -78,7 +78,9 @@ class WidgetBarreNavigation extends StatelessWidget {
 
               // ── Bouton SCAN central surélevé ──────────────────
               GestureDetector(
-                onTap: onScanTap,
+                onTap: onScanTap ?? () {
+                  Navigator.pushNamed(context, Routes.cameraDocument);
+                },
                 child: Container(
                   width: 58,
                   height: 58,

@@ -5,6 +5,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import '../../configuration/routes.dart';
 import '../../configuration/theme.dart';
 import '../../models/modele_signalement.dart';
 import '../../providers/provider_signalements.dart';
@@ -94,7 +95,13 @@ class _EcranMesSignalementsState extends State<EcranMesSignalements> {
                     Row(
                       children: [
                         GestureDetector(
-                          onTap: () => Navigator.pop(context),
+                          onTap: () {
+                            if (Navigator.canPop(context)) {
+                              Navigator.pop(context);
+                            } else {
+                              Navigator.pushReplacementNamed(context, Routes.accueilAgent);
+                            }
+                          },
                           child: Container(
                             width: 36,
                             height: 36,
@@ -552,10 +559,10 @@ class EcranDetailSignalement extends StatelessWidget {
                   enfants: [
                     _LigneInfo(label: 'Lieu', valeur: signalement.lieu),
                     _LigneInfo(label: 'Date', valeur: signalement.date),
-                    _LigneInfo(
-                      label: 'Réf.',
-                      valeur: '#${signalement.id}',
-                    ),
+                    // _LigneInfo(
+                    //   label: 'Réf.',
+                    //   valeur: '#${signalement.id}',
+                    // ),
                   ],
                 ),
 

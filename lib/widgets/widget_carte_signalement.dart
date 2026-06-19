@@ -24,24 +24,26 @@ class WidgetCarteSignalement extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: ThemeApplication.blanc,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: const Color(0xFFE2E8F0)),
+          border: Border.all(
+            color: const Color(0xFFE2E8F0),
+          ),
+          borderRadius: BorderRadius.circular(10),
           boxShadow: const [
             BoxShadow(
-              color: Color(0x08000000),
-              blurRadius: 4,
-              offset: Offset(0, 2),
+              color: Color(0x0C000000),
+              blurRadius: 2,
+              offset: Offset(0, 1),
             ),
           ],
         ),
         child: Row(
           children: [
-            // ── Avatar initiales ──────────────────────────────
+            // Avatar
             Container(
               width: 48,
               height: 48,
-              decoration: BoxDecoration(
-                color: ThemeApplication.couleurPrimaire.withOpacity(0.1),
+              decoration: const BoxDecoration(
+                color: Color(0xFFEEEEF0),
                 shape: BoxShape.circle,
               ),
               child: Center(
@@ -49,7 +51,7 @@ class WidgetCarteSignalement extends StatelessWidget {
                   signalement.initiales,
                   style: TextStyle(
                     color: ThemeApplication.couleurPrimaire,
-                    fontSize: 16,
+                    fontSize: 14,
                     fontFamily: 'Montserrat',
                     fontWeight: FontWeight.w700,
                   ),
@@ -59,10 +61,11 @@ class WidgetCarteSignalement extends StatelessWidget {
 
             const SizedBox(width: 12),
 
-            // ── Infos ─────────────────────────────────────────
+            // Informations
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
                     signalement.nom,
@@ -72,41 +75,34 @@ class WidgetCarteSignalement extends StatelessWidget {
                       color: const Color(0xFF1A1C1E),
                     ),
                   ),
+
                   const SizedBox(height: 2),
-                  Text(
-                    '${signalement.typeDocument} • ${signalement.lieu}',
+
+                 Text(
+                    signalement.typeDocument,
                     style: ThemeApplication.legende.copyWith(
                       fontSize: 12,
+                      fontWeight: FontWeight.w500,
                       color: const Color(0xFF464554),
                     ),
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 4),
+
                   Text(
                     signalement.date,
                     style: ThemeApplication.legende.copyWith(
-                      fontSize: 11,
-                      color: ThemeApplication.couleurTexteSecondaire,
+                      fontSize: 12,
+                      color: const Color(0xFF464554),
                     ),
                   ),
                 ],
               ),
             ),
 
-            const SizedBox(width: 8),
+            const SizedBox(width: 12),
 
-            // ── Badge statut ─────────────────────────────────
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                _BadgeStatut(statut: signalement.statut),
-                const SizedBox(height: 8),
-                const Icon(
-                  Icons.chevron_right,
-                  size: 18,
-                  color: Color(0xFFCBCBCB),
-                ),
-              ],
-            ),
+            // Badge à droite
+            _BadgeStatut(statut: signalement.statut),
           ],
         ),
       ),
@@ -117,27 +113,31 @@ class WidgetCarteSignalement extends StatelessWidget {
 class _BadgeStatut extends StatelessWidget {
   final StatutSignalement statut;
 
-  const _BadgeStatut({required this.statut});
+  const _BadgeStatut({
+    required this.statut,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 12,
+        vertical: 4,
+      ),
       decoration: BoxDecoration(
         color: statut.couleurFond,
         borderRadius: BorderRadius.circular(9999),
       ),
       child: Text(
-        statut.libelle,
+        statut.libelle.toUpperCase(),
         style: TextStyle(
           color: statut.couleurTexte,
-          fontSize: 10,
+          fontSize: 11,
           fontFamily: 'Montserrat',
           fontWeight: FontWeight.w700,
-          letterSpacing: 0.5,
+          letterSpacing: 0.55,
         ),
       ),
     );
   }
 }
-

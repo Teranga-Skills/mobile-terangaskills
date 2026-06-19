@@ -24,7 +24,7 @@ class EcranSynchronisation extends StatefulWidget {
 }
 
 class _EcranSynchronisationState extends State<EcranSynchronisation> {
-  int _indexNav = 2; // onglet Sync actif
+  int _indexNav = 3; // onglet Sync actif
 
   @override
   Widget build(BuildContext context) {

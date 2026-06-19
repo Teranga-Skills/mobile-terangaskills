@@ -152,27 +152,24 @@ class _CarteScanState extends State<_CarteScan>
       child: Column(
         children: [
           // Icône avec animation pulsation
-          ScaleTransition(
-            scale: _pulse,
-            child: Container(
-              width: 96,
-              height: 96,
-              decoration: BoxDecoration(
-                color: ThemeApplication.couleurPrimaire.withOpacity(0.08),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.document_scanner_outlined,
-                size: 42,
-                color: ThemeApplication.couleurPrimaire,
-              ),
-            ),
+         Container(
+          width: 96,
+          height: 96,
+          decoration: BoxDecoration(
+            color: ThemeApplication.couleurPrimaire.withOpacity(0.08),
+            shape: BoxShape.circle,
           ),
+          child: const Icon(
+            Icons.document_scanner_outlined,
+            size: 42,
+            color: ThemeApplication.couleurPrimaire,
+          ),
+        ),
 
           const SizedBox(height: 18),
 
           Text(
-            'Scanner un document',
+            'Nouveau signalement',
             textAlign: TextAlign.center,
             style: ThemeApplication.titrePrincipal.copyWith(
               fontSize: 22,
@@ -184,7 +181,7 @@ class _CarteScanState extends State<_CarteScan>
           const SizedBox(height: 8),
 
           Text(
-            'L\'IA extrait et analyse les\ninformations clés en quelques secondes.',
+            'L\'IA extrait et vérifie les\ninformations clés en quelques secondes.',
             textAlign: TextAlign.center,
             style: ThemeApplication.corpsMedium.copyWith(
               color: const Color(0xFF464554),
@@ -199,29 +196,55 @@ class _CarteScanState extends State<_CarteScan>
             onTap: () {
               Navigator.pushNamed(context, Routes.cameraDocument);
             },
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              decoration: BoxDecoration(
-                color: ThemeApplication.couleurPrimaire,
-                borderRadius: BorderRadius.circular(9999),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color(0x664749CD),
-                    blurRadius: 16,
-                    offset: Offset(0, 8),
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.camera_alt_outlined, color: Colors.white, size: 20),
-                  const SizedBox(width: 10),
-                  Text('Lancer le scan', style: ThemeApplication.labelBouton),
-                ],
-              ),
+            child: Column(
+  mainAxisSize: MainAxisSize.min,
+  children: [
+    SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: () {
+           Navigator.pushReplacementNamed( context, Routes.cameraDocument, arguments: <String, dynamic>{}, 
+           ); 
+        },
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.camera_alt_outlined,
+              color: Colors.white,
+              size: 20,
             ),
+            const SizedBox(width: 10),
+            Text(
+              'Scanner un document',
+              style: ThemeApplication.labelBouton,
+            ),
+          ],
+        ),
+      ),
+    ),
+
+    const SizedBox(height: 8),
+
+    TextButton(
+      onPressed: () {
+        Navigator.pushReplacementNamed(
+          context,
+          Routes.nouveauSignalement,
+          arguments: <String, dynamic>{},
+        );
+      },
+      child: Text(
+        'Saisir manuellement',
+        style: TextStyle(
+          color: ThemeApplication.couleurPrimaire,
+          fontFamily: 'Montserrat',
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    ),
+  ],
+),
           ),
         ],
       ),

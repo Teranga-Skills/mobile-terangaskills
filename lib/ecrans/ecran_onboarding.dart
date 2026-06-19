@@ -126,7 +126,7 @@ class _EcranOnboardingState extends State<EcranOnboarding> {
                 const SizedBox(width: 12),
               ],
               WidgetBoutonPrimaire(
-                label: _estDernierePage ? 'Se connecter' : 'Suivant',
+                label: _estDernierePage ? 'Commencez' : 'Suivant',
                 onTap: _pageSuivante,
                 estExpanse: _estDernierePage,
               ),

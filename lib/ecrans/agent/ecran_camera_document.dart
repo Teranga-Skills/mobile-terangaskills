@@ -180,7 +180,7 @@ class _EcranCameraDocumentState extends State<EcranCameraDocument> {
                     children: [
                       _construireBoutonOption(
                         label: 'Extraire les données du document',
-                        icone: Icons.document_scanner_outlined,
+                        icone: Icons.circle,
                         onTap: _lancerAnalyse,
                       ),
                       const SizedBox(height: 12),
@@ -203,25 +203,6 @@ class _EcranCameraDocumentState extends State<EcranCameraDocument> {
                             ),
                           ),
                           const SizedBox(width: 12),
-                          Expanded(
-                            child: TextButton(
-                              onPressed: () {
-                                Navigator.pushReplacementNamed(
-                                  context,
-                                  Routes.nouveauSignalement,
-                                  arguments: <String, dynamic>{},
-                                );
-                              },
-                              child: Text(
-                                'Saisie Manuelle',
-                                style: TextStyle(
-                                  color: ThemeApplication.couleurPrimaire,
-                                  fontFamily: 'Montserrat',
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ),
                         ],
                       ),
                     ],

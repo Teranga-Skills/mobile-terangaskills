@@ -71,16 +71,12 @@ class EnteteAgent extends StatelessWidget {
                       );
                     },
                     child: ClipOval(
-                      child: Image.network(
-                        'https://i.pravatar.cc/100',
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Container(
-                          color: const Color(0xFF4060D0),
-                          child: Icon(
-                            Icons.person,
-                            color: Colors.white,
-                            size: avatarSize * 0.6,
-                          ),
+                      child: Container(
+                        color: ThemeApplication.couleurPrimaire,
+                        child: Icon(
+                          Icons.person,
+                          color: Colors.white,
+                          size: avatarSize * 0.6,
                         ),
                       ),
                     ),

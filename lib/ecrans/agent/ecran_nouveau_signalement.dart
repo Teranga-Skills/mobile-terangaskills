@@ -4,6 +4,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:teranga_skills/ecrans/agent/ecran_accueil_agent.dart';
 import '../../configuration/routes.dart';
 import '../../configuration/theme.dart';
 import '../../providers/provider_signalements.dart';
@@ -389,7 +390,7 @@ class _EcranNouveauSignalementState extends State<EcranNouveauSignalement> {
         backgroundColor: ThemeApplication.couleurPrimaire,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Navigator.pushNamed(context, Routes.accueilAgent),
         ),
         title: Text(
           'Détails Signalement',

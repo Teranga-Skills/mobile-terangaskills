@@ -10,7 +10,7 @@ class ThemeApplication {
 
   // ─── PALETTE DE COULEURS ────────────────────────────────────────
 
-  static const Color couleurPrimaire         = Color(0xFF5780FA);
+  static const Color couleurPrimaire         = Color(0xFF0C3F5E);
   static const Color couleurFondSombre       = Color(0xFF12202F);
   static const Color couleurSecondaire       = Color(0xFF1E8449);
 
@@ -67,7 +67,7 @@ class ThemeApplication {
   );
 
   static TextStyle get labelBouton => GoogleFonts.montserrat(
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: FontWeight.w600,
     color: blanc,
     letterSpacing: 0.2,

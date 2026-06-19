@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../configuration/theme.dart';
 import '../../configuration/routes.dart';
 import '../../providers/provider_authentification.dart';
+import '../../widgets/widget_barre_navigation.dart';
 
 class EcranProfil extends StatelessWidget {
   const EcranProfil({super.key});
@@ -68,7 +69,7 @@ class EcranProfil extends StatelessWidget {
                 width: 80,
                 height: 80,
                 decoration: const BoxDecoration(
-                  color: Color(0xFF4060D0),
+                  color: ThemeApplication.couleurPrimaire,
                   shape: BoxShape.circle,
                 ),
                 child: Center(
@@ -183,6 +184,10 @@ class EcranProfil extends StatelessWidget {
             ),
           ],
         ),
+      ),
+      bottomNavigationBar: WidgetBarreNavigation(
+        indexCourant: 4,
+        onTap: (i) {},
       ),
     );
   }
